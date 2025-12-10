@@ -1,0 +1,541 @@
+:root {
+    --primary: #3f51b5;
+    --selectable: #4caf50;
+    --selected: rgba(33, 150, 243, 0.8);
+    --saved: rgba(165, 214, 167, 0.8);
+    --occupied: #e0e0e0;
+    --excluded: #ffb74d; /* Naranja claro para días excluidos */
+    --blocked: #757575;
+    --holiday: #f44336;
+    --sunday: #f44336;
+    --light: #f5f5f5;
+    --dark: #212121;
+    --background-light: #fafafa;
+    --background-dark: #1a1a1a;
+    --surface-light: #ffffff;
+    --surface-dark: #252525;
+    --text-light: #212121;
+    --text-dark: #e0e0e0;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-light: var(--background-dark);
+        --surface-light: var(--surface-dark);
+        --text-light: var(--text-dark);
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+body {
+    background-color: var(--background-light);
+    color: var(--text-light);
+    line-height: 1.6;
+    padding-bottom: 80px;
+    min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 14px; /* Tamaño base más pequeño para móviles */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 15px; /* Reducido padding */
+}
+
+header {
+    background-color: var(--primary);
+    color: white;
+    padding: 12px 0; /* Reducido padding */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px; /* Reducido padding */
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap; /* Permitir que se envuelva en móviles */
+}
+
+.header-content h1 {
+    font-size: 1.3rem; /* Reducido tamaño del título */
+    margin-bottom: 5px;
+    flex: 1 1 100%; /* Ocupar toda la anchura en móviles */
+    text-align: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Reducido gap */
+    justify-content: center;
+    flex: 1 1 100%; /* Ocupar toda la anchura en móviles */
+    font-size: 0.9rem; /* Reducido tamaño de fuente */
+}
+
+.instructions {
+    background-color: var(--surface-light);
+    padding: 15px; /* Reducido padding */
+    border-radius: 2px;
+    margin: 15px 0; /* Reducido margen */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.instructions h2 {
+    font-size: 1.2rem; /* Tamaño apropiado para móviles */
+    margin-bottom: 10px;
+    color: var(--primary); /* Darle un color distintivo */
+    font-weight: 500;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.instructions p {
+    font-size: 0.9rem; /* Reducido tamaño */
+    line-height: 1.4;
+}
+
+.color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Reducido gap */
+    margin-top: 12px;
+    font-size: 0.85rem; /* Reducido tamaño de fuente */
+}
+
+.color-item {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* Reducido gap */
+}
+
+.color-box {
+    width: 16px; /* Reducido tamaño */
+    height: 16px; /* Reducido tamaño */
+    border-radius: 2px;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Reducido minmax */
+    gap: 15px; /* Reducido gap */
+    margin-top: 15px;
+}
+
+.month {
+    background-color: var(--surface-light);
+    border-radius: 2px;
+    padding: 12px; /* Reducido padding */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.month-header {
+    text-align: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 500;
+    text-transform: capitalize;
+    color: var(--text-light);
+    font-size: 1rem; /* Reducido tamaño */
+}
+
+.weekdays, .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px; /* Reducido gap */
+}
+
+.weekday, .day {
+    text-align: center;
+    padding: 6px 3px; /* Reducido padding */
+    font-size: 0.85rem; /* Reducido tamaño de fuente */
+}
+
+.weekday {
+    font-weight: 500;
+    font-size: 0.8rem; /* Reducido tamaño */
+    color: var(--text-light);
+}
+
+.day {
+    border-radius: 2px;
+    transition: all 0.2s;
+    cursor: default;
+    min-height: 32px; /* Reducido altura */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.day.selectable {
+    background-color: var(--selectable);
+    color: white;
+    cursor: pointer;
+}
+
+.day.selectable:hover {
+    background-color: #388e3c;
+}
+
+.day.selected {
+    background-color: var(--selected);
+    color: white;
+    cursor: pointer;
+}
+
+.day.saved {
+    background-color: var(--saved);
+    cursor: pointer;
+}
+
+.day.holiday, .day.sunday {
+    background-color: var(--holiday);
+    color: white;
+}
+
+.day.occupied {
+    background-color: var(--occupied);
+    color: var(--dark);
+}
+
+.day.excluded {
+    background-color: var(--excluded);
+    color: var(--dark);
+    cursor: not-allowed;
+}
+
+/* Día bloqueado - debe tener menor prioridad que saved, selected, excluded, occupied */
+.day.blocked {
+    background-color: var(--blocked);
+    color: white;
+    opacity: 0.7; /* Un poco transparente para que no sea tan fuerte */
+}
+
+/* Asegurar que las clases con mayor prioridad se mantengan visibles */
+.day.saved.blocked,
+.day.selected.blocked,
+.day.excluded.blocked,
+.day.occupied.blocked {
+    background-color: inherit; /* Mantiene el color de la clase de mayor prioridad */
+    opacity: 1; /* Sin transparencia */
+}
+
+.day.other-month {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Gradientes combinados */
+.day.holiday.occupied,
+.day.sunday.occupied {
+    background: linear-gradient(135deg, var(--occupied) 0%, var(--occupied) 50%, var(--holiday) 50%, var(--holiday) 100%);
+}
+
+.day.holiday.selected,
+.day.sunday.selected {
+    background: linear-gradient(135deg, var(--selected) 0%, var(--selected) 50%, var(--holiday) 50%, var(--holiday) 100%);
+}
+
+.day.holiday.saved,
+.day.sunday.saved {
+    background: linear-gradient(135deg, var(--saved) 0%, var(--saved) 50%, var(--holiday) 50%, var(--holiday) 100%);
+}
+
+.day.holiday.excluded {
+    background: linear-gradient(135deg, var(--excluded) 0%, var(--excluded) 50%, var(--holiday) 50%, var(--holiday) 100%);
+}
+
+.day.sunday.excluded {
+    background: linear-gradient(135deg, var(--excluded) 0%, var(--excluded) 50%, var(--sunday) 50%, var(--sunday) 100%);
+}
+
+.day.excluded.occupied {
+    background: linear-gradient(135deg, var(--excluded) 0%, var(--excluded) 50%, var(--occupied) 50%, var(--occupied) 100%);
+}
+
+/* Gradientes para combinaciones con bloqueado - solo cuando no hay otras clases */
+.day.holiday.blocked:not(.saved):not(.selected):not(.excluded):not(.occupied),
+.day.sunday.blocked:not(.saved):not(.selected):not(.excluded):not(.occupied) {
+    background: linear-gradient(135deg, var(--blocked) 0%, var(--blocked) 50%, var(--holiday) 50%, var(--holiday) 100%);
+    opacity: 0.7;
+}
+
+.floating-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--surface-light);
+    padding: 12px; /* Reducido padding */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    gap: 12px; /* Reducido gap */
+    z-index: 1000;
+    transition: background-color 0.3s;
+}
+
+.floating-actions button {
+    font-size: 0.9rem; /* Reducido tamaño de fuente */
+    padding: 8px 16px; /* Ajustado padding */
+    height: auto;
+}
+
+/* Diálogos */
+dialog.mdl-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    box-shadow: 0 9px 46px 8px rgba(0,0,0,0.14), 0 11px 15px -7px rgba(0,0,0,0.12), 0 24px 38px 3px rgba(0,0,0,0.2);
+    border: none;
+    padding: 0;
+    background-color: var(--surface-light);
+    color: var(--text-light);
+    z-index: 2001;
+}
+
+dialog::backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(1px);
+    z-index: 2000;
+}
+
+.mdl-dialog__title {
+    background-color: var(--primary);
+    color: white;
+    padding: 14px 20px; /* Reducido padding */
+    margin: 0;
+    font-size: 1.1rem; /* Reducido tamaño */
+    font-weight: 500;
+}
+
+.mdl-dialog__content {
+    padding: 20px; /* Reducido padding */
+    line-height: 1.5;
+    max-height: 60vh;
+    overflow-y: auto;
+    font-size: 0.9rem; /* Reducido tamaño de fuente */
+}
+
+.mdl-dialog__actions {
+    padding: 8px 20px 14px; /* Reducido padding */
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.mdl-dialog__actions .mdl-button {
+    margin: 0;
+    min-width: 70px; /* Reducido ancho mínimo */
+    font-size: 0.85rem; /* Reducido tamaño de fuente */
+    padding: 6px 12px; /* Ajustado padding */
+}
+
+/* Overlay de carga */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(2px);
+}
+
+.loading-spinner {
+    text-align: center;
+    background-color: var(--surface-light);
+    padding: 25px; /* Reducido padding */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: var(--text-light);
+    transition: background-color 0.3s, color 0.3s;
+    min-width: 280px; /* Reducido ancho mínimo */
+    max-width: 90%;
+    font-size: 0.9rem; /* Reducido tamaño de fuente */
+}
+
+.mdl-spinner {
+    width: 35px; /* Reducido tamaño */
+    height: 35px; /* Reducido tamaño */
+    margin: 0 auto 12px;
+}
+
+/* Para modo oscuro */
+@media (prefers-color-scheme: dark) {
+    .instructions h2 {
+        color: #bb86fc; /* Color más visible en modo oscuro */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Media query para móviles pequeños */
+@media (max-width: 480px) {
+    body {
+        font-size: 13px; /* Aún más pequeño para móviles muy pequeños */
+    }
+    
+    .header-content h1 {
+        font-size: 1.1rem; /* Más pequeño */
+        margin-bottom: 3px;
+    }
+    
+    .user-info {
+        font-size: 0.85rem; /* Más pequeño */
+    }
+    
+    .instructions h2 {
+        font-size: 1.1rem; /* Más pequeño */
+    }
+    
+    .instructions p {
+        font-size: 0.85rem; /* Más pequeño */
+    }
+    
+    .month {
+        padding: 10px; /* Más pequeño */
+    }
+    
+    .month-header {
+        font-size: 0.95rem; /* Más pequeño */
+    }
+    
+    .day {
+        min-height: 28px; /* Más pequeño */
+        font-size: 0.8rem; /* Más pequeño */
+    }
+    
+    .weekday {
+        font-size: 0.75rem; /* Más pequeño */
+    }
+    
+    .color-legend {
+        font-size: 0.8rem; /* Más pequeño */
+    }
+    
+    .color-box {
+        width: 14px; /* Más pequeño */
+        height: 14px; /* Más pequeño */
+    }
+    
+    #save-btn {
+        font-size: 0.85rem; /* Más pequeño */
+        padding: 6px 12px; /* Ajustado */
+    }
+}
+
+/* Ajustes específicos para móviles en orientación horizontal */
+@media (max-width: 768px) and (orientation: landscape) {
+    .header-content {
+        flex-direction: row; /* Mantener en fila en horizontal */
+        flex-wrap: nowrap;
+    }
+    
+    .header-content h1 {
+        flex: 1;
+        text-align: left;
+        font-size: 1.1rem;
+    }
+    
+    .user-info {
+        flex: 0 0 auto;
+        justify-content: flex-end;
+    }
+    
+    .calendar {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    
+    .floating-actions button {
+        width: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .header-content h1 {
+        flex: 1 1 100%;
+        text-align: center;
+        font-size: 1.2rem; /* Tamaño para tablets pequeñas */
+    }
+    
+    .user-info {
+        flex: 1 1 100%;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+    
+    .calendar {
+        grid-template-columns: 1fr;
+    }
+    
+    .floating-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .floating-actions button {
+        width: 90%;
+        max-width: 300px;
+    }
+    
+    dialog.mdl-dialog {
+        max-width: 95%;
+        margin: auto;
+    }
+}
+
+/* Para pantallas muy grandes, aumentar un poco el tamaño */
+@media (min-width: 1200px) {
+    body {
+        font-size: 16px;
+    }
+    
+    .header-content h1 {
+        font-size: 1.5rem;
+    }
+    
+    .day {
+        min-height: 30px;
+        font-size: 0.9rem;
+    }
+}
+
+h1, h2, h3 {
+    margin: 10px 0;
+}
