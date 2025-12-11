@@ -1,28 +1,35 @@
 :root {
     --primary: #3f51b5;
+    --accent: #e57373;
     --selectable: #4caf50;
     --selected: rgba(33, 150, 243, 0.8);
     --saved: rgba(165, 214, 167, 0.8);
     --occupied: #e0e0e0;
-    --excluded: #ffb74d; /* Naranja claro para días excluidos */
+    --excluded: #ffb74d;
     --blocked: #757575;
     --holiday: #f44336;
     --sunday: #f44336;
+    --background: #fafafa;
+    --surface: #ffffff;
+    --text: #212121;
+    --border: #e0e0e0;
     --light: #f5f5f5;
     --dark: #212121;
-    --background-light: #fafafa;
-    --background-dark: #1a1a1a;
-    --surface-light: #ffffff;
-    --surface-dark: #252525;
-    --text-light: #212121;
-    --text-dark: #e0e0e0;
+    --button-light: #e3f2fd; /* Color claro azul para botón */
 }
 
+/* Modo oscuro */
 @media (prefers-color-scheme: dark) {
     :root {
-        --background-light: var(--background-dark);
-        --surface-light: var(--surface-dark);
-        --text-light: var(--text-dark);
+        --background: #1a1a1a;
+        --surface: #252525;
+        --text: #e0e0e0;
+        --border: #424242;
+        --occupied: #424242;
+        --blocked: #616161;
+        --light: #2d2d2d;
+        --dark: #e0e0e0;
+        --button-light: #0d47a1; /* Más oscuro para modo oscuro */
     }
 }
 
@@ -34,25 +41,25 @@
 }
 
 body {
-    background-color: var(--background-light);
-    color: var(--text-light);
+    background-color: var(--background);
+    color: var(--text);
     line-height: 1.6;
     padding-bottom: 80px;
     min-height: 100vh;
     transition: background-color 0.3s, color 0.3s;
-    font-size: 14px; /* Tamaño base más pequeño para móviles */
+    font-size: 14px;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 15px; /* Reducido padding */
+    padding: 15px;
 }
 
 header {
     background-color: var(--primary);
     color: white;
-    padding: 12px 0; /* Reducido padding */
+    padding: 12px 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -60,82 +67,82 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px; /* Reducido padding */
+    padding: 0 15px;
     max-width: 1200px;
     margin: 0 auto;
-    flex-wrap: wrap; /* Permitir que se envuelva en móviles */
+    flex-wrap: wrap;
 }
 
 .header-content h1 {
-    font-size: 1.3rem; /* Reducido tamaño del título */
+    font-size: 1.3rem;
     margin-bottom: 5px;
-    flex: 1 1 100%; /* Ocupar toda la anchura en móviles */
+    flex: 1 1 100%;
     text-align: center;
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 8px; /* Reducido gap */
+    gap: 8px;
     justify-content: center;
-    flex: 1 1 100%; /* Ocupar toda la anchura en móviles */
-    font-size: 0.9rem; /* Reducido tamaño de fuente */
+    flex: 1 1 100%;
+    font-size: 0.9rem;
 }
 
 .instructions {
-    background-color: var(--surface-light);
-    padding: 15px; /* Reducido padding */
+    background-color: var(--surface);
+    padding: 15px;
     border-radius: 2px;
-    margin: 15px 0; /* Reducido margen */
+    margin: 15px 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: background-color 0.3s, color 0.3s;
 }
 
 .instructions h2 {
-    font-size: 1.2rem; /* Tamaño apropiado para móviles */
+    font-size: 1.2rem;
     margin-bottom: 10px;
-    color: var(--primary); /* Darle un color distintivo */
+    color: var(--primary);
     font-weight: 500;
     padding-bottom: 8px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .instructions p {
-    font-size: 0.9rem; /* Reducido tamaño */
+    font-size: 0.9rem;
     line-height: 1.4;
 }
 
 .color-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; /* Reducido gap */
+    gap: 10px;
     margin-top: 12px;
-    font-size: 0.85rem; /* Reducido tamaño de fuente */
+    font-size: 0.85rem;
 }
 
 .color-item {
     display: flex;
     align-items: center;
-    gap: 4px; /* Reducido gap */
+    gap: 4px;
 }
 
 .color-box {
-    width: 16px; /* Reducido tamaño */
-    height: 16px; /* Reducido tamaño */
+    width: 16px;
+    height: 16px;
     border-radius: 2px;
 }
 
 .calendar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Reducido minmax */
-    gap: 15px; /* Reducido gap */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
     margin-top: 15px;
 }
 
 .month {
-    background-color: var(--surface-light);
+    background-color: var(--surface);
     border-radius: 2px;
-    padding: 12px; /* Reducido padding */
+    padding: 12px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: background-color 0.3s, color 0.3s;
 }
@@ -144,41 +151,41 @@ header {
     text-align: center;
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border);
     font-weight: 500;
     text-transform: capitalize;
-    color: var(--text-light);
-    font-size: 1rem; /* Reducido tamaño */
+    color: var(--text);
+    font-size: 1rem;
 }
 
 .weekdays, .days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 3px; /* Reducido gap */
+    gap: 3px;
 }
 
 .weekday, .day {
     text-align: center;
-    padding: 6px 3px; /* Reducido padding */
-    font-size: 0.85rem; /* Reducido tamaño de fuente */
+    padding: 6px 3px;
+    font-size: 0.85rem;
 }
 
 .weekday {
     font-weight: 500;
-    font-size: 0.8rem; /* Reducido tamaño */
-    color: var(--text-light);
+    font-size: 0.8rem;
+    color: var(--text);
 }
 
 .day {
     border-radius: 2px;
     transition: all 0.2s;
     cursor: default;
-    min-height: 32px; /* Reducido altura */
+    min-height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 500;
-    color: var(--text-light);
+    color: var(--text);
 }
 
 .day.selectable {
@@ -218,20 +225,18 @@ header {
     cursor: not-allowed;
 }
 
-/* Día bloqueado - debe tener menor prioridad que saved, selected, excluded, occupied */
 .day.blocked {
     background-color: var(--blocked);
     color: white;
-    opacity: 0.7; /* Un poco transparente para que no sea tan fuerte */
+    opacity: 0.7;
 }
 
-/* Asegurar que las clases con mayor prioridad se mantengan visibles */
 .day.saved.blocked,
 .day.selected.blocked,
 .day.excluded.blocked,
 .day.occupied.blocked {
-    background-color: inherit; /* Mantiene el color de la clase de mayor prioridad */
-    opacity: 1; /* Sin transparencia */
+    background-color: inherit;
+    opacity: 1;
 }
 
 .day.other-month {
@@ -239,7 +244,6 @@ header {
     pointer-events: none;
 }
 
-/* Gradientes combinados */
 .day.holiday.occupied,
 .day.sunday.occupied {
     background: linear-gradient(135deg, var(--occupied) 0%, var(--occupied) 50%, var(--holiday) 50%, var(--holiday) 100%);
@@ -267,35 +271,48 @@ header {
     background: linear-gradient(135deg, var(--excluded) 0%, var(--excluded) 50%, var(--occupied) 50%, var(--occupied) 100%);
 }
 
-/* Gradientes para combinaciones con bloqueado - solo cuando no hay otras clases */
 .day.holiday.blocked:not(.saved):not(.selected):not(.excluded):not(.occupied),
 .day.sunday.blocked:not(.saved):not(.selected):not(.excluded):not(.occupied) {
     background: linear-gradient(135deg, var(--blocked) 0%, var(--blocked) 50%, var(--holiday) 50%, var(--holiday) 100%);
     opacity: 0.7;
 }
 
+/* BOTONES - ESTILOS MINIMOS */
 .floating-actions {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: var(--surface-light);
-    padding: 12px; /* Reducido padding */
+    background-color: var(--surface);
+    padding: 12px;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     display: flex;
     justify-content: center;
-    gap: 12px; /* Reducido gap */
+    gap: 12px;
     z-index: 1000;
     transition: background-color 0.3s;
 }
 
-.floating-actions button {
-    font-size: 0.9rem; /* Reducido tamaño de fuente */
-    padding: 8px 16px; /* Ajustado padding */
-    height: auto;
+/* Botón "Confirmar Vacaciones" - Color claro */
+#save-btn {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--button-light) !important;
+    color: #1565c0 !important; /* Texto azul oscuro para contraste */
+    font-weight: 500;
 }
 
-/* Diálogos */
+/* Botón "Cerrar Sesión" mantiene estilo por defecto */
+#logout-btn {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Diálogos - CORREGIDOS PARA EVITAR TRANSPARENCIA */
 dialog.mdl-dialog {
     position: fixed;
     top: 50%;
@@ -309,9 +326,18 @@ dialog.mdl-dialog {
     box-shadow: 0 9px 46px 8px rgba(0,0,0,0.14), 0 11px 15px -7px rgba(0,0,0,0.12), 0 24px 38px 3px rgba(0,0,0,0.2);
     border: none;
     padding: 0;
-    background-color: var(--surface-light);
-    color: var(--text-light);
+    background-color: var(--surface);
+    color: var(--text);
     z-index: 2001;
+    opacity: 1 !important;
+}
+
+/* Asegurar que los diálogos específicos tengan fondo sólido */
+#success-dialog,
+#error-dialog,
+#confirm-dialog {
+    background-color: var(--surface) !important;
+    opacity: 1 !important;
 }
 
 dialog::backdrop {
@@ -320,41 +346,65 @@ dialog::backdrop {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: blur(1px);
     z-index: 2000;
+    opacity: 1 !important;
 }
 
 .mdl-dialog__title {
     background-color: var(--primary);
     color: white;
-    padding: 14px 20px; /* Reducido padding */
+    padding: 14px 20px;
     margin: 0;
-    font-size: 1.1rem; /* Reducido tamaño */
+    font-size: 1.1rem;
     font-weight: 500;
+    border-radius: 8px 8px 0 0;
 }
 
 .mdl-dialog__content {
-    padding: 20px; /* Reducido padding */
+    padding: 20px;
     line-height: 1.5;
     max-height: 60vh;
     overflow-y: auto;
-    font-size: 0.9rem; /* Reducido tamaño de fuente */
+    font-size: 0.9rem;
+    background-color: var(--surface);
 }
 
 .mdl-dialog__actions {
-    padding: 8px 20px 14px; /* Reducido padding */
+    padding: 8px 20px 14px;
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    border-top: 1px solid rgba(0,0,0,0.1);
+    border-top: 1px solid var(--border);
+    background-color: var(--surface);
+    border-radius: 0 0 8px 8px;
+    align-items: center;
 }
 
+/* Botones en diálogos - estilo mínimo */
 .mdl-dialog__actions .mdl-button {
     margin: 0;
-    min-width: 70px; /* Reducido ancho mínimo */
-    font-size: 0.85rem; /* Reducido tamaño de fuente */
-    padding: 6px 12px; /* Ajustado padding */
+    min-width: 70px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Botón "Guardar" en diálogo de confirmación - color claro */
+.confirm-save {
+    background-color: var(--button-light) !important;
+    color: #1565c0 !important;
+    font-weight: 500;
+}
+
+/* Botón de refresco */
+#refresh-btn {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Overlay de carga */
@@ -374,90 +424,117 @@ dialog::backdrop {
 
 .loading-spinner {
     text-align: center;
-    background-color: var(--surface-light);
-    padding: 25px; /* Reducido padding */
+    background-color: var(--surface);
+    padding: 25px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    color: var(--text-light);
+    color: var(--text);
     transition: background-color 0.3s, color 0.3s;
-    min-width: 280px; /* Reducido ancho mínimo */
+    min-width: 280px;
     max-width: 90%;
-    font-size: 0.9rem; /* Reducido tamaño de fuente */
+    font-size: 0.9rem;
 }
 
 .mdl-spinner {
-    width: 35px; /* Reducido tamaño */
-    height: 35px; /* Reducido tamaño */
+    width: 35px;
+    height: 35px;
     margin: 0 auto 12px;
 }
 
-/* Para modo oscuro */
+/* Ajustes específicos para modo oscuro */
 @media (prefers-color-scheme: dark) {
     .instructions h2 {
-        color: #bb86fc; /* Color más visible en modo oscuro */
+        color: #bb86fc;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .month-header {
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .mdl-dialog__actions {
+        border-top: 1px solid var(--border);
+    }
+    
+    /* Texto blanco para botón claro en modo oscuro */
+    #save-btn,
+    .confirm-save {
+        color: #bbdefb !important; /* Azul claro para modo oscuro */
     }
 }
 
 /* Media query para móviles pequeños */
 @media (max-width: 480px) {
     body {
-        font-size: 13px; /* Aún más pequeño para móviles muy pequeños */
+        font-size: 13px;
     }
     
     .header-content h1 {
-        font-size: 1.1rem; /* Más pequeño */
+        font-size: 1.1rem;
         margin-bottom: 3px;
     }
     
     .user-info {
-        font-size: 0.85rem; /* Más pequeño */
+        font-size: 0.85rem;
     }
     
     .instructions h2 {
-        font-size: 1.1rem; /* Más pequeño */
+        font-size: 1.1rem;
     }
     
     .instructions p {
-        font-size: 0.85rem; /* Más pequeño */
+        font-size: 0.85rem;
     }
     
     .month {
-        padding: 10px; /* Más pequeño */
+        padding: 10px;
     }
     
     .month-header {
-        font-size: 0.95rem; /* Más pequeño */
+        font-size: 0.95rem;
     }
     
     .day {
-        min-height: 28px; /* Más pequeño */
-        font-size: 0.8rem; /* Más pequeño */
+        min-height: 28px;
+        font-size: 0.8rem;
     }
     
     .weekday {
-        font-size: 0.75rem; /* Más pequeño */
+        font-size: 0.75rem;
     }
     
     .color-legend {
-        font-size: 0.8rem; /* Más pequeño */
+        font-size: 0.8rem;
     }
     
     .color-box {
-        width: 14px; /* Más pequeño */
-        height: 14px; /* Más pequeño */
+        width: 14px;
+        height: 14px;
     }
     
-    #save-btn {
-        font-size: 0.85rem; /* Más pequeño */
-        padding: 6px 12px; /* Ajustado */
+    .mdl-dialog__title {
+        padding: 12px 16px;
+        font-size: 1rem;
+    }
+    
+    .mdl-dialog__content {
+        padding: 16px;
+    }
+    
+    /* Botones más pequeños en móviles */
+    #save-btn, #logout-btn,
+    .mdl-dialog__actions .mdl-button,
+    #refresh-btn {
+        min-height: 32px;
+        font-size: 0.85rem;
+        padding: 4px 12px;
     }
 }
 
-/* Ajustes específicos para móviles en orientación horizontal */
+/* Ajustes para móviles en orientación horizontal */
 @media (max-width: 768px) and (orientation: landscape) {
     .header-content {
-        flex-direction: row; /* Mantener en fila en horizontal */
+        flex-direction: row;
         flex-wrap: nowrap;
     }
     
@@ -476,6 +553,11 @@ dialog::backdrop {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     }
     
+    .floating-actions {
+        flex-direction: row;
+        align-items: center;
+    }
+    
     .floating-actions button {
         width: auto;
     }
@@ -491,7 +573,7 @@ dialog::backdrop {
     .header-content h1 {
         flex: 1 1 100%;
         text-align: center;
-        font-size: 1.2rem; /* Tamaño para tablets pequeñas */
+        font-size: 1.2rem;
     }
     
     .user-info {
@@ -507,6 +589,7 @@ dialog::backdrop {
     .floating-actions {
         flex-direction: column;
         align-items: center;
+        gap: 8px;
     }
     
     .floating-actions button {
@@ -520,7 +603,7 @@ dialog::backdrop {
     }
 }
 
-/* Para pantallas muy grandes, aumentar un poco el tamaño */
+/* Para pantallas muy grandes */
 @media (min-width: 1200px) {
     body {
         font-size: 16px;
@@ -538,4 +621,14 @@ dialog::backdrop {
 
 h1, h2, h3 {
     margin: 10px 0;
+}
+
+/* Asegurar que todos los botones sean visibles */
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+button:not(:disabled) {
+    cursor: pointer;
 }

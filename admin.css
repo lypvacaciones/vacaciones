@@ -124,17 +124,23 @@ header {
     min-width: 180px;
 }
 
+/* Contenedor de la tabla: permitir que adopte el tamaño de la tabla (sin scroll horizontal) */
 .table-wrapper {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    overflow: hidden;
-    overflow-x: auto;
+    overflow-x: visible;
 }
 
+/* Evitar forzar un min-width fijo en la tabla y permitir que adopte su tamaño natural.
+   Se añade !important para sobreescribir reglas inline o externas que establezcan width:100%. */
 table.dataTable {
-    min-width: 1500px;
+    min-width: auto !important;
+    width: auto !important;
 }
+
+/* Si quieres específicamente que la tabla no crezca más que su contenido, puedes
+   mantener width:auto; y controlar columnas via CSS/JS si fuera necesario. */
 
 .table thead th {
     background: #f5f5f5;
@@ -167,7 +173,7 @@ table.dataTable {
 
 /* Estilo para el select de tipo */
 .tipo-select {
-    width: 120px;
+    width: 75px;
     font-size: 0.85rem;
     padding: 1px 3px;
     height: 24px;
@@ -243,6 +249,16 @@ table.dataTable {
     color: var(--accent);
 }
 
+/* Clase propia para columnas estrechas donde va la X (limpiar) */
+.col-narrow {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    text-align: center;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+}
+
 /* Estilo para botón Guardar cuando hay cambios */
 .save-btn.save-changed {
     background-color: var(--warning) !important;
@@ -293,9 +309,25 @@ table.dataTable {
     font-size: 0.85rem;
 }
 
+/* Alineación de la zona inferior (info + paginación) para dejar la paginación a la derecha */
+.dt-bottom.clearfix {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* info a la izquierda, paginación a la derecha */
+    gap: 12px;
+}
+
+/* Asegurar que el contenedor de paginación se empuje a la derecha */
+.dt-bottom.clearfix .dt-pag {
+    margin-left: auto;
+}
+
+/* Mantener estilo del buscador dentro de contenedores personalizados */
 div.dt-container div.dt-search input {
     margin-left: 0.5em;
     width: auto;
     background-color: whitesmoke;
     padding: 4px 3px!important;
 }
+
+.table thead th[colspan] {     text-align: center;     vertical-align: middle; } 

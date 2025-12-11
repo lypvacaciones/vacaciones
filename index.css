@@ -9,10 +9,24 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #1a1a1a;
-        --surface: #252525;
+        --primary: #7986cb;
+        --accent: #ff8a80;
+        --background: #121212;
+        --surface: #1e1e1e;
         --text: #e0e0e0;
         --border: #424242;
+    }
+    
+    body {
+        color-scheme: dark;
+    }
+    
+    .login-box {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .error-message {
+        background-color: rgba(229, 115, 115, 0.2);
     }
 }
 
@@ -51,6 +65,7 @@ body {
     text-align: center;
     margin-bottom: 24px;
     font-weight: 500;
+    color: var(--text);
 }
 
 .login-form {
@@ -71,4 +86,21 @@ body {
     background-color: rgba(229, 115, 115, 0.1);
     border-radius: 4px;
     display: none;
+}
+
+/* Asegurar que los inputs de MDL funcionen en modo oscuro */
+@media (prefers-color-scheme: dark) {
+    .mdl-textfield__input {
+        color: var(--text);
+        border-bottom-color: var(--border);
+    }
+    
+    .mdl-textfield__label {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .mdl-textfield--floating-label.is-focused .mdl-textfield__label,
+    .mdl-textfield--floating-label.is-dirty .mdl-textfield__label {
+        color: var(--primary);
+    }
 }

@@ -60,7 +60,7 @@ function handleExportExcel() {
 
 // Cargar lista de empleados
 async function loadEmployees(db) {
-    DOM.tbody.innerHTML = `<tr><td colspan="26" style="text-align:center;padding:20px">Cargando...</td></tr>`;
+    DOM.tbody.innerHTML = `<tr><td colspan="23" style="text-align:center;padding:20px">Cargando...</td></tr>`;
     try {
         const snap = await db.collection('empleados').orderBy('nombre').get();
         employees = snap.docs
@@ -70,7 +70,7 @@ async function loadEmployees(db) {
         renderEmpresaFilter();
         renderTable(employees);
     } catch (err) {
-        DOM.tbody.innerHTML = `<tr><td colspan="26" style="color:#f44336;padding:20px;text-align:center">⚠️ Error: ${escapeHtml(err.message)}</td></tr>`;
+        DOM.tbody.innerHTML = `<tr><td colspan="23" style="color:#f44336;padding:20px;text-align:center">Error: ${escapeHtml(err.message)}</td></tr>`;
     }
 }
 
@@ -107,7 +107,7 @@ function renderRowData(emp) {
 // Renderizar tabla con DataTables
 function renderTable(data) {
     if (!data.length) {
-        DOM.tbody.innerHTML = `<tr><td colspan="26" style="padding:20px;text-align:center;color:#9e9e9e">No hay empleados</td></tr>`;
+        DOM.tbody.innerHTML = `<tr><td colspan="23" style="padding:20px;text-align:center;color:#9e9e9e">No hay empleados</td></tr>`;
         if (dataTable) dataTable.destroy();
         return;
     }
@@ -115,7 +115,7 @@ function renderTable(data) {
     if (!dataTable) {
         dataTable = $('#employees-table').DataTable({
             paging: true,
-            pageLength: 20,
+            pageLength: 10,
             lengthMenu: [10, 20, 40],
             searching: true,
             ordering: true,
@@ -142,32 +142,13 @@ function renderTable(data) {
                         const tipo = d || '1';
                         return `
                             <select class="tipo-select" data-login="${r.login}">
-                                <option value="1" ${tipo === '1' || tipo === 1 ? 'selected' : ''}>Quincena (15 días)</option>
-                                <option value="2" ${tipo === '2' || tipo === 2 ? 'selected' : ''}>Semana (7 días)</option>
+                                <option value="1" ${tipo === '1' || tipo === 1 ? 'selected' : ''}>15 días</option>
+                                <option value="2" ${tipo === '2' || tipo === 2 ? 'selected' : ''}>7 días</option>
                             </select>
                         `;
                     }
                 },
-                { 
-                    data: 'grupo', 
-                    render: d => escapeHtml(d || '') 
-                },
-                { 
-                    data: 'subgrupo', 
-                    render: d => escapeHtml(d || '') 
-                },
-                // Columna para exclusiones
-                { 
-                    data: 'exclusiones', 
-                    render: d => {
-                        // Si exclusiones es un array, convertirlo a string
-                        if (Array.isArray(d)) {
-                            return escapeHtml(d.join(', '));
-                        }
-                        return escapeHtml(d || '');
-                    }
-                },
-                // Período 1
+                // Período 1 - EMPIEZA AQUÍ DESPUÉS DEL TIPO
                 { 
                     data: null, 
                     render: (_, __, r) => `<input class="input-range calendar-input" data-type="start" data-period="1" value="${r.per1start || ''}">` 
@@ -178,6 +159,7 @@ function renderTable(data) {
                 },
                 { 
                     data: null, 
+                    className: 'cell-clear col-narrow', 
                     render: (_, __, r) => `<button class="clear-btn" data-period="1" title="Limpiar"><span class="material-icons" style="font-size:16px">clear</span></button>` 
                 },
                 { 
@@ -199,6 +181,7 @@ function renderTable(data) {
                 },
                 { 
                     data: null, 
+                    className: 'cell-clear col-narrow', 
                     render: (_, __, r) => `<button class="clear-btn" data-period="2" title="Limpiar"><span class="material-icons" style="font-size:16px">clear</span></button>` 
                 },
                 { 
@@ -220,6 +203,7 @@ function renderTable(data) {
                 },
                 { 
                     data: null, 
+                    className: 'cell-clear col-narrow', 
                     render: (_, __, r) => `<button class="clear-btn" data-period="3" title="Limpiar"><span class="material-icons" style="font-size:16px">clear</span></button>` 
                 },
                 { 
@@ -241,6 +225,7 @@ function renderTable(data) {
                 },
                 { 
                     data: null, 
+                    className: 'cell-clear col-narrow', 
                     render: (_, __, r) => `<button class="clear-btn" data-period="4" title="Limpiar"><span class="material-icons" style="font-size:16px">clear</span></button>` 
                 },
                 { 
@@ -510,7 +495,7 @@ async function saveRow(row, login) {
             
             // Validar que si hay fechas, ambas estén presentes
             if ((start && !end) || (!start && end)) {
-                alert(`❌ Error en período ${i}: Debe completar ambas fechas o dejar ambas vacías.`);
+                alert(`Error en período ${i}: Debe completar ambas fechas o dejar ambas vacías.`);
                 row.classList.remove('row-saving');
                 return;
             }
@@ -521,13 +506,13 @@ async function saveRow(row, login) {
                 const endDate = parseDate(end);
                 
                 if (!startDate || !endDate) {
-                    alert(`❌ Error en período ${i}: Formato de fecha inválido.`);
+                    alert(`Error en período ${i}: Formato de fecha inválido.`);
                     row.classList.remove('row-saving');
                     return;
                 }
                 
                 if (endDate <= startDate) {
-                    alert(`❌ Error en período ${i}: La fecha de fin debe ser posterior a la fecha de inicio.`);
+                    alert(`Error en período ${i}: La fecha de fin debe ser posterior a la fecha de inicio.`);
                     row.classList.remove('row-saving');
                     return;
                 }
@@ -575,7 +560,7 @@ async function saveRow(row, login) {
         if (saveBtn) saveBtn.classList.remove('save-changed');
         
     } catch (err) {
-        alert(`❌ Error al guardar: ${err.message}`);
+        alert(`Error al guardar: ${err.message}`);
     } finally {
         row.classList.remove('row-saving');
     }

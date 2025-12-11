@@ -1,8 +1,19 @@
 // Festivos 2026 (Vigo)
 const HOLIDAYS_2026 = [
-    '2026-01-01', '2026-01-06', '2026-04-02', '2026-04-03',
-    '2026-05-01', '2026-07-25', '2026-08-15', '2026-08-16',
-    '2026-10-12', '2026-11-01', '2026-12-06', '2026-12-08', '2026-12-25'
+    '2026-01-01', // Año Nuevo (National)
+    '2026-01-06', // Día de Reyes (National)
+    '2026-03-19', // San José (Galician Regional Holiday)[citation:3]
+    '2026-03-28', // Fiesta de la Reconquista (Vigo Local Holiday)[citation:4]
+    '2026-04-02', // Jueves Santo (National)
+    '2026-04-03', // Viernes Santo (National)
+    '2026-05-01', // Día del Trabajador (National)
+    '2026-06-24', // San Juan (Galician Regional Holiday)[citation:3]
+    '2026-07-25', // Día de Galicia (Galician Regional Holiday)[citation:3]
+    '2026-08-15', // Asunción (National)
+    '2026-08-17', // Día posterior a San Roque (Vigo Local Holiday)[citation:4]
+    '2026-10-12', // Fiesta Nacional de España (National)
+    '2026-12-08', // Inmaculada Concepción (National)
+    '2026-12-25'  // Navidad (National)
 ];
 
 // Rangos de exclusión por empresa (para usuarios con exclusiones = 1)
@@ -23,6 +34,9 @@ const EXCLUSION_RANGES = [
         end: '2026-04-05'
     }
 ];
+
+// Variable global para modo debug
+const DEBUG_MODE = false; // Cambiar a true para ver debug info
 
 // Estado global
 let currentUser = null;
@@ -64,6 +78,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Forzar limpieza de caché de Firebase si es necesario
+    try {
+        // Esto ayuda a limpiar caché persistente
+        if (firebase.firestore && firebase.firestore()._persistenceEnabled) {
+            await firebase.firestore().clearPersistence();
+        }
+    } catch (e) {
+        console.log('No se pudo limpiar persistencia:', e);
+    }
+
     // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -85,6 +109,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.querySelector('.confirm-save').addEventListener('click', () => saveVacations(db));
     
+    // Configurar botón de refresco
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+            DOM.errorDialog.close();
+            toggleLock(true);
+            try {
+                await loadUserData(db);
+                generateCalendar();
+            } catch (err) {
+                console.error('Error al refrescar:', err);
+            } finally {
+                toggleLock(false);
+            }
+        });
+    }
+    
+    // Mostrar/ocultar botón de refresco según el tipo de error
+    DOM.errorDialog.addEventListener('close', () => {
+        if (refreshBtn) refreshBtn.style.display = 'none';
+    });
+
     // Cerrar diálogos con Escape
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
@@ -94,13 +140,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Crear contenedor para tabla debug
+    // Crear contenedor para tabla debug SOLO SI DEBUG_MODE ES TRUE
     const legend = document.getElementById('color-legend');
-    if (legend) {
+    if (legend && DEBUG_MODE) {
         const div = document.createElement('div');
         div.id = 'debug-table-container';
         legend.parentNode.insertBefore(div, legend.nextSibling);
         DOM.debugTable = div;
+    } else if (legend && !DEBUG_MODE) {
+        // Si no está en modo debug, eliminar contenedor si existe
+        const existingDebug = document.getElementById('debug-table-container');
+        if (existingDebug) {
+            existingDebug.remove();
+        }
+        DOM.debugTable = null;
     }
 
     // Cargar datos del usuario y generar calendario
@@ -113,26 +166,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     showMainScreen();
 });
 
-// Cargar datos del usuario desde Firestore
+// Función auxiliar para mostrar error con opción de refresco
+function showCollisionError(message, showRefresh = true) {
+    DOM.errorMessage.textContent = message;
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) refreshBtn.style.display = showRefresh ? 'inline-block' : 'none';
+    DOM.errorDialog.showModal();
+}
+
+// Cargar datos del usuario desde Firestore SIN CACHE
 async function loadUserData(db) {
     try {
-        const doc = await db.collection('empleados').doc(currentUser.login).get();
+        // Forzar recarga sin caché usando get() con source: 'server'
+        const doc = await db.collection('empleados').doc(currentUser.login).get({ source: 'server' });
+        
         if (doc.exists) {
+            // Actualizar datos del usuario con los más recientes
             currentUser = { ...currentUser, ...doc.data() };
             if (currentUser.tipo === undefined) currentUser.tipo = 1;
 
-            // Cargar usuarios del mismo grupo y subgrupo
+            // Cargar usuarios del mismo grupo y subgrupo SIN CACHE
             const groupPromises = [ 
-                db.collection('empleados').where('grupo', '==', currentUser.grupo).get()
+                db.collection('empleados').where('grupo', '==', currentUser.grupo).get({ source: 'server' })
             ];
+            
             if (currentUser.subgrupo && currentUser.subgrupo.length > 0) {
                 groupPromises.push(
-                    db.collection('empleados').where('grupo', '==', currentUser.subgrupo).get()
+                    db.collection('empleados').where('grupo', '==', currentUser.subgrupo).get({ source: 'server' })
                 );
             }
 
             const groupSnaps = await Promise.all(groupPromises);
             const users = new Map();
+            
             groupSnaps.forEach(snap => {
                 snap.docs.forEach(doc => {
                     if (doc.id !== currentUser.login) {
@@ -140,12 +206,15 @@ async function loadUserData(db) {
                     }
                 });
             });
+            
             allUsers = Array.from(users.values());
+            
+            // Limpiar selecciones previas si ya no son válidas
+            validateCurrentSelectionsAgainstDatabase();
         }
     } catch (err) {
         console.error('Error al cargar datos del usuario:', err);
-        DOM.errorMessage.textContent = 'Error al cargar datos del usuario';
-        DOM.errorDialog.showModal();
+        showCollisionError('Error al cargar datos del usuario. Por favor, refresca la página.', true);
     }
 }
 
@@ -199,9 +268,9 @@ function renderLegend() {
     `;
 }
 
-// Tabla debug con el título y solo los usuarios relevantes
+// Tabla debug con el título y solo los usuarios relevantes - SOLO SI DEBUG_MODE ES TRUE
 function renderDebugTable() {
-    if (!DOM.debugTable) return;
+    if (!DOM.debugTable || !DEBUG_MODE) return;
     
     const hasExclusions = currentUser.exclusiones === '1';
     
@@ -590,10 +659,12 @@ function wouldOverlap(date) {
     }
 }
 
-function wouldOverlapRange([s1, e1]) {
+function wouldOverlapRange([s1, e1], forceRealTimeCheck = false) {
     const start1 = new Date(s1);
     const end1 = new Date(e1);
-    const users = [currentUser, ...allUsers];
+    
+    // Usar allUsers que ya debería estar actualizado
+    const users = forceRealTimeCheck ? allUsers : [currentUser, ...allUsers];
     
     // Verificar solapamiento con rangos guardados de otros usuarios
     for (const u of users) {
@@ -617,7 +688,7 @@ function wouldOverlapRange([s1, e1]) {
         if (!(end1 < start2 || start1 > end2)) return true;
     }
     
-    // Verificar si el rango se solapa con días excluidos (solo si el usuario tiene exclusiones)
+    // Verificar si el rango se solapa con días excluidos
     if (currentUser.exclusiones === '1') {
         const rangeDaysList = rangeDays(s1, e1);
         for (const day of rangeDaysList) {
@@ -630,6 +701,41 @@ function wouldOverlapRange([s1, e1]) {
     return false;
 }
 
+// Validar que las selecciones actuales no colisionen con datos actualizados de BD
+function validateCurrentSelectionsAgainstDatabase() {
+    // Solo si hay selecciones activas
+    if (selectedRanges.length === 0) return;
+    
+    // Verificar cada rango seleccionado
+    const invalidRanges = [];
+    
+    selectedRanges.forEach((range, index) => {
+        if (wouldOverlapRange(range, true)) { // true = forzar verificación contra BD
+            invalidRanges.push(index);
+        }
+    });
+    
+    // Eliminar rangos inválidos
+    if (invalidRanges.length > 0) {
+        // Ordenar de mayor a menor para eliminar correctamente
+        invalidRanges.sort((a, b) => b - a);
+        
+        invalidRanges.forEach(index => {
+            selectedRanges.splice(index, 1);
+        });
+        
+        // Mostrar advertencia genérica si se eliminaron selecciones
+        if (selectedRanges.length < invalidRanges.length) {
+            setTimeout(() => {
+                showCollisionError('¡Atención! Otro compañero acaba de solicitar días de vacaciones que se solapaban con tus selecciones.\n\nTus selecciones han sido actualizadas automáticamente.', true);
+            }, 500);
+        }
+        
+        // Regenerar calendario
+        generateCalendar();
+    }
+}
+
 // Confirmar
 function showConfirmDialog() {
     const prevRanges = getCurrentSavedRanges();
@@ -639,13 +745,72 @@ function showConfirmDialog() {
     DOM.confirmDialog.showModal();
 }
 
-// Guardar en Firestore
+// Guardar en Firestore con verificación en tiempo real
 async function saveVacations(db) {
     DOM.confirmDialog.close();
     if (!selectedRanges.length || isSaving) return;
     toggleLock(true);
     
     try {
+        // ÚLTIMA VERIFICACIÓN: Recargar datos más recientes antes de guardar
+        const latestUserDoc = await db.collection('empleados').doc(currentUser.login).get({ source: 'server' });
+        const latestUserData = latestUserDoc.exists ? latestUserDoc.data() : {};
+        
+        // Cargar usuarios más recientes también
+        const latestGroupPromises = [
+            db.collection('empleados').where('grupo', '==', currentUser.grupo).get({ source: 'server' })
+        ];
+        
+        if (currentUser.subgrupo && currentUser.subgrupo.length > 0) {
+            latestGroupPromises.push(
+                db.collection('empleados').where('grupo', '==', currentUser.subgrupo).get({ source: 'server' })
+            );
+        }
+        
+        const latestGroupSnaps = await Promise.all(latestGroupPromises);
+        const latestUsers = new Map();
+        
+        latestGroupSnaps.forEach(snap => {
+            snap.docs.forEach(doc => {
+                if (doc.id !== currentUser.login) {
+                    latestUsers.set(doc.id, { login: doc.id, ...doc.data() });
+                }
+            });
+        });
+        
+        // Verificar colisiones con datos actualizados
+        for (const [start, end] of selectedRanges) {
+            // Verificar contra el usuario actual actualizado
+            for (let i = 1; i <= 4; i++) {
+                const s2 = latestUserData[`per${i}start`];
+                const e2 = latestUserData[`per${i}end`];
+                if (!s2 || !e2) continue;
+                
+                const start2 = new Date(s2);
+                const end2 = new Date(e2);
+                if (!(new Date(end) < start2 || new Date(start) > end2)) {
+                    throw new Error('Colisión detectada con tus propias vacaciones recién actualizadas. Por favor, recarga la página.');
+                }
+            }
+            
+            // Verificar contra otros usuarios actualizados
+            for (const user of latestUsers.values()) {
+                for (let i = 1; i <= 4; i++) {
+                    const s2 = user[`per${i}start`];
+                    const e2 = user[`per${i}end`];
+                    if (!s2 || !e2) continue;
+                    
+                    const start2 = new Date(s2);
+                    const end2 = new Date(e2);
+                    if (!(new Date(end) < start2 || new Date(start) > end2)) {
+                        // Mensaje genérico sin mencionar al usuario específico
+                        throw new Error('¡Atención! Parece que otro compañero acaba de solicitar días de vacaciones que se solapan con los que intentas reservar.\n\nPor favor, refresca el calendario para ver los cambios más recientes.');
+                    }
+                }
+            }
+        }
+        
+        // Si pasa todas las verificaciones, proceder con el guardado
         const prevRanges = getCurrentSavedRanges();
         let allRanges = [...prevRanges];
 
@@ -667,20 +832,35 @@ async function saveVacations(db) {
             updates[`per${i}end`] = firebase.firestore.FieldValue.delete();
         }
         
+        // Guardar en Firestore
         await db.collection('empleados').doc(currentUser.login).update(updates);
 
-        // Actualizar datos del usuario
-        const doc = await db.collection('empleados').doc(currentUser.login).get();
-        currentUser = { login: currentUser.login, ...doc.data() };
+        // Recargar datos del usuario después de guardar
+        const updatedDoc = await db.collection('empleados').doc(currentUser.login).get({ source: 'server' });
+        currentUser = { login: currentUser.login, ...updatedDoc.data() };
         if (currentUser.tipo === undefined) currentUser.tipo = 1;
 
+        // Limpiar selecciones
         selectedRanges = [];
+        
+        // Mostrar éxito
         DOM.successDialog.showModal();
+        
+        // Actualizar interfaz
         generateCalendar();
         renderDebugTable();
+        
     } catch (err) {
-        DOM.errorMessage.textContent = err.message || 'Error al guardar';
-        DOM.errorDialog.showModal();
+        const showRefresh = err.message.includes('otro compañero') || err.message.includes('refresca') || err.message.includes('recarga');
+        showCollisionError(err.message, showRefresh);
+        
+        // Recargar datos para actualizar interfaz
+        try {
+            await loadUserData(db);
+            generateCalendar();
+        } catch (reloadErr) {
+            console.error('Error al recargar datos:', reloadErr);
+        }
     } finally {
         toggleLock(false);
     }
