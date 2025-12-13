@@ -313,8 +313,8 @@ function renderTable(data) {
     if (!dataTable) {
         dataTable = $('#employees-table').DataTable({
             paging: true,
-            pageLength: 10,
-            lengthMenu: [10, 20, 40, 60, 100],
+            pageLength: 15,
+            lengthMenu: [15, 30, 60, 100],
             searching: true,
             ordering: true,
             info: true,

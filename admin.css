@@ -33,7 +33,7 @@ header {
 .container {
     max-width: fit-content;
     margin: 0 auto;
-    padding: 16px;
+    padding: 0px;
 }
 
 .page-title {
@@ -146,7 +146,7 @@ table.dataTable {
     background: #f5f5f5;
     font-weight: 600;
     color: #333;
-    padding: 10px 8px;
+    padding: 5px 8px;
     vertical-align: bottom;
     border-bottom: 2px solid var(--border);
     font-size: 0.875rem;
@@ -470,4 +470,19 @@ div.dt-container div.dt-search input {
 
 .mdl-button { height: 32px; line-height: 32px;}
 
-.mdl-data-table tbody tr { height: 42px;}
+.mdl-data-table tbody tr { height: 40px;}
+.mdl-data-table th {height: 40px;}
+
+/* Cursor pointer para las 3 primeras cabeceras */
+#employees-table thead th:nth-child(1),
+#employees-table thead th:nth-child(2),
+#employees-table thead th:nth-child(3) {
+    cursor: pointer !important;
+}
+
+/* Opcional: fondo sutil al pasar el mouse */
+#employees-table thead th:nth-child(1):hover,
+#employees-table thead th:nth-child(2):hover,
+#employees-table thead th:nth-child(3):hover {
+    background-color: rgba(63, 81, 181, 0.05) !important;
+}
