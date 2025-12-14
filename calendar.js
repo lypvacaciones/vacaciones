@@ -347,8 +347,19 @@ function createDay(date, isOtherMonth = false) {
         return el;
     }
 
+    if (isExcluded) {
+        el.classList.add('excluded');
+        if (isHol) el.classList.add('holiday');
+        if (isSun) el.classList.add('sunday');
+        // nada de selección ni ocupación ni saved ni click
+        return el;
+    }
+
+
     if (isSaved) {
         el.classList.add('saved');
+        if (isHol) el.classList.add('holiday');
+        if (isSun) el.classList.add('sunday');
     } else if (isSelected) {
         el.classList.add('selected');
         el.addEventListener('click', () => removeSelection(ds));

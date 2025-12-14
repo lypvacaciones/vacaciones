@@ -106,10 +106,38 @@ function filtraPorEmpresa() {
 function showGroupInfo(login) {
     const emp = employees.find(e => e.login === login);
     if (!emp) return;
+    
     document.getElementById('dialog-employee-name').textContent = emp.nombre || 'N/A';
     document.getElementById('dialog-employee-empresa').textContent = emp.empresa ? `Empresa: ${emp.empresa}` : 'Empresa: N/A';
-    document.getElementById('dialog-employee-grupo').textContent = emp.grupo ? `Grupo: ${emp.grupo}` : 'Grupo: N/A';
-    document.getElementById('dialog-employee-subgrupo').textContent = emp.subgrupo ? `Subgrupo: ${emp.subgrupo}` : '';
+    
+    // Construir la información de grupo
+    let groupInfo = '';
+    if (emp.grupo) {
+        groupInfo += `Grupo: ${emp.grupo}`;
+    }
+    if (emp.subgrupo) {
+        groupInfo += groupInfo ? ` | Subgrupo: ${emp.subgrupo}` : `Subgrupo: ${emp.subgrupo}`;
+    }
+    if (!emp.grupo && !emp.subgrupo) {
+        groupInfo = 'Sin grupo/subgrupo';
+    }
+    document.getElementById('dialog-employee-grupo').textContent = groupInfo;
+    
+    // Añadir información de exclusiones - MODIFICADO
+    const tieneExclusiones = emp.exclusiones && emp.exclusiones.trim() !== '';
+    const exclusionElement = document.getElementById('dialog-employee-subgrupo');
+    
+    if (tieneExclusiones) {
+        exclusionElement.innerHTML = `<i class="material-icons" style="font-size:14px">warning</i> Con exclusiones: ${escapeHtml(emp.exclusiones)}`;
+        exclusionElement.className = 'employee-group-item exclusion-warning';
+        exclusionElement.style.display = 'block';
+    } else {
+        // Si no tiene exclusiones, ocultar completamente el elemento
+        exclusionElement.innerHTML = '';
+        exclusionElement.className = '';
+        exclusionElement.style.display = 'none';
+    }
+    
     const incompatibleEmployees = findIncompatibleEmployees(emp);
     updateIncompatibleTable(incompatibleEmployees);
     DOM.groupDialog.showModal();
@@ -131,9 +159,13 @@ function updateIncompatibleTable(incompatibleEmployees) {
         incompatibleEmployees.forEach(emp => {
             const grupoInfo = emp.grupo || 'N/A';
             const subgrupoInfo = emp.subgrupo ? `/ ${emp.subgrupo}` : '';
+            // Verificar si este empleado incompatible tiene exclusiones - MODIFICADO
+            const tieneExclusiones = emp.exclusiones && emp.exclusiones.trim() !== '';
+            const exclusionIcon = tieneExclusiones ? ' <i class="material-icons" style="font-size:14px; color:#f44336; vertical-align:middle" title="Con exclusiones">warning</i>' : '';
+            
             html += `
                 <tr>
-                    <td class="employee-name">${escapeHtml(emp.nombre || emp.login)}</td>
+                    <td class="employee-name">${escapeHtml(emp.nombre || emp.login)}${exclusionIcon}</td>
                     <td class="employee-empresa">${escapeHtml(emp.empresa || 'N/A')}</td>
                     <td class="employee-grupo">${escapeHtml(grupoInfo)} ${escapeHtml(subgrupoInfo)}</td>
                 </tr>
@@ -324,11 +356,50 @@ function renderTable(data) {
             autoWidth: false,
             data: data,
             columns: [
-                { data: 'nombre', render: (d, _, r) => `<span class="td-nombre" title="${escapeHtml(d || '')}">${escapeHtml(d || '')}</span>` },
-                { data: 'dni', render: d => escapeHtml(d || '') },
-                { data: 'empresa', render: d => escapeHtml(d || '') },
-                { data: null, className: 'cell-group', render: (_, __, r) => { const hasGroup = r.grupo || r.subgrupo; return hasGroup ? `<button class="group-info-btn" data-login="${r.login}" title="Ver trabajadores que no pueden coincidir"><i class="material-icons">group</i></button>` : `<span class="no-group" title="Sin restricciones de grupo">-</span>`; } },
-                { data: 'tipo', render: (d, _, r) => { const tipo = d || '1'; const initialStatus = checkInitialStatus(r); let initialClass = ''; if (initialStatus.isComplete) initialClass = 'row-complete'; else if (initialStatus.isIncomplete) initialClass = 'row-incomplete'; return `<select class="tipo-select" data-login="${r.login}"><option value="1" ${tipo === '1' || tipo === 1 ? 'selected' : ''}>15 días</option><option value="2" ${tipo === '2' || tipo === 2 ? 'selected' : ''}>7 días</option></select>`; } },
+                { 
+                    data: 'nombre', 
+                    className: 'td-nombre',
+                    render: (d, _, r) => `<span class="td-nombre" title="${escapeHtml(d || '')}">${escapeHtml(d || '')}</span>` 
+                },
+                { 
+                    data: 'dni', 
+                    render: d => escapeHtml(d || '') 
+                },
+                { 
+                    data: 'empresa', 
+                    className: 'td-empresa',
+                    render: function(d, type, row) {
+                        if (!d) return '';
+                        const empresa = escapeHtml(d);
+                        // Recortar a 14 caracteres y añadir ...
+                        const truncated = empresa.length > 14 ? empresa.substring(0, 14) + '...' : empresa;
+                        return `<span title="${empresa}">${truncated}</span>`;
+                    }
+                },
+                { 
+                    data: null, 
+                    className: 'cell-group', 
+                    render: (_, __, r) => { 
+                        const hasGroup = r.grupo || r.subgrupo; 
+                        return hasGroup ? 
+                            `<button class="group-info-btn" data-login="${r.login}" title="Ver trabajadores que no pueden coincidir"><i class="material-icons">group</i></button>` : 
+                            `<span class="no-group" title="Sin restricciones de grupo">-</span>`; 
+                    } 
+                },
+                { 
+                    data: 'tipo', 
+                    render: (d, _, r) => { 
+                        const tipo = d || '1'; 
+                        const initialStatus = checkInitialStatus(r); 
+                        let initialClass = ''; 
+                        if (initialStatus.isComplete) initialClass = 'row-complete'; 
+                        else if (initialStatus.isIncomplete) initialClass = 'row-incomplete'; 
+                        return `<select class="tipo-select" data-login="${r.login}">
+                            <option value="1" ${tipo === '1' || tipo === 1 ? 'selected' : ''}>15 días</option>
+                            <option value="2" ${tipo === '2' || tipo === 2 ? 'selected' : ''}>7 días</option>
+                        </select>`; 
+                    } 
+                },
                 // Períodos
                 { data: null, render: (_, __, r) => `<input class="input-range calendar-input" data-type="start" data-period="1" value="${r.per1start || ''}">` },
                 { data: null, render: (_, __, r) => `<input class="input-range calendar-input" data-type="end" data-period="1" value="${r.per1end || ''}">` },
