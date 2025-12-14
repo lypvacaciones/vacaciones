@@ -332,7 +332,6 @@ function createDay(date, isOtherMonth = false) {
     let isSpecialBlocked = selectableInfo.blocked;
     let isDesignatedDay = (!selectableInfo.realDate || fmt(selectableInfo.realDate) === ds);
 
-    // CAMBIO CLAVE AQUÍ:
     let isBlocked = false;
     if (isSelectable) {
         if (typeof isSpecialBlocked !== "undefined") {
@@ -450,16 +449,72 @@ function isValidQuincenaStart(date) {
     return { selectable: false };
 }
 
-function isSelectableDay(date) {
-    if (!currentUser) return { selectable: false };
-    const guardadas = getCurrentSavedRanges();
-    if (currentUser.tipo === 1) {
-        if (guardadas.length >= 2) return { selectable: false };
-        return isQuincenaSelectableDay(date);
-    } else {
-        if (guardadas.length >= 4) return { selectable: false };
-        return { selectable: isValidWeekStart(date), realDate: date };
+// --- LOGICA SEMANA ANÁLOGA A QUINCENA ---
+function isWeekSelectableDay(date) {
+    const w = date.getDay();
+    const ds = fmt(date);
+
+    // LUNES o SÁBADO normal no festivo
+    if ((w === 1 || w === 6) && !HOLIDAYS_2026.includes(ds)) 
+        return { selectable: true, realDate: date };
+
+    // ¿Este día es alternativo anterior a un sábado festivo?
+    if (w >= 1 && w < 6) {
+        const next = new Date(date); next.setDate(next.getDate() + 1);
+        const nDay = next.getDay();
+        const nDs = fmt(next);
+        if (nDay === 6 && HOLIDAYS_2026.includes(nDs)) {
+            const blockResult = checkSelectableOverrideRangeWeek(date);
+            return { selectable: blockResult === true, realDate: date, blocked: blockResult === 'blocked' };
+        }
     }
+
+    // ¿Este día es alternativo posterior a un lunes festivo?
+    if (w > 1 && w <= 6) {
+        const prev = new Date(date); prev.setDate(prev.getDate() - 1);
+        const pDay = prev.getDay();
+        const pDs = fmt(prev);
+        if (pDay === 1 && HOLIDAYS_2026.includes(pDs)) {
+            const blockResult = checkSelectableOverrideRangeWeek(date);
+            return { selectable: blockResult === true, realDate: date, blocked: blockResult === 'blocked' };
+        }
+    }
+
+    // LUNES festivo: busca primer día laborable adelante (máx viernes)
+    if (w === 1 && HOLIDAYS_2026.includes(ds)) {
+        let next = new Date(date);
+        for (let i = 1; i <= 6; i++) {
+            next.setDate(next.getDate() + 1);
+            const nDay = next.getDay();
+            const nDs = fmt(next);
+            if (!(HOLIDAYS_2026.includes(nDs) || nDay === 0)) {
+                const blockResult = checkSelectableOverrideRangeWeek(next);
+                return { selectable: blockResult === true, realDate: next, blocked: blockResult === 'blocked' };
+            }
+        }
+        return { selectable: false };
+    }
+    // SÁBADO festivo: busca atrás primer día laborable (máx lunes)
+    if (w === 6 && HOLIDAYS_2026.includes(ds)) {
+        let prev = new Date(date);
+        for (let i = 1; i <= 6; i++) {
+            prev.setDate(prev.getDate() - 1);
+            const pDay = prev.getDay();
+            const pDs = fmt(prev);
+            if (!(HOLIDAYS_2026.includes(pDs) || pDay === 0)) {
+                const blockResult = checkSelectableOverrideRangeWeek(prev);
+                return { selectable: blockResult === true, realDate: prev, blocked: blockResult === 'blocked' };
+            }
+        }
+        return { selectable: false };
+    }
+    // Días alternativos para festivos en semana (martes...viernes)
+    if (isAltForHoliday(date)) {
+        const blockResult = checkSelectableOverrideRangeWeek(date);
+        return { selectable: blockResult === true, realDate: date, blocked: blockResult === 'blocked' };
+    }
+
+    return { selectable: false };
 }
 
 function checkSelectableOverride(date) {
@@ -472,6 +527,41 @@ function checkSelectableOverride(date) {
         return "blocked";
     }
     return true;
+}
+function checkSelectableOverrideRangeWeek(date) {
+    const ds = fmt(date);
+    const r = [ds, fmt(calcRangeEndWeek(date, 6))];
+    if (
+        isInAnyRange(ds, currentUser) ||
+        wouldOverlapRange(r)
+    ) {
+        return "blocked";
+    }
+    return true;
+}
+function calcRangeEndWeek(start, baseDays) {
+    let end = new Date(start);
+    end.setDate(end.getDate() + baseDays);
+    let next = new Date(end);
+    next.setDate(next.getDate() + 1);
+    while (HOLIDAYS_2026.includes(fmt(next)) || next.getDay() === 0) {
+        end = next;
+        next = new Date(end);
+        next.setDate(next.getDate() + 1);
+    }
+    return end;
+}
+
+function isSelectableDay(date) {
+    if (!currentUser) return { selectable: false };
+    const guardadas = getCurrentSavedRanges();
+    if (currentUser.tipo === 1) {
+        if (guardadas.length >= 2) return { selectable: false };
+        return isQuincenaSelectableDay(date);
+    } else {
+        if (guardadas.length >= 4) return { selectable: false };
+        return isWeekSelectableDay(date);
+    }
 }
 
 function isInExclusionRange(ds) {
@@ -548,16 +638,21 @@ function getCurrentSavedRanges() {
     return ranges;
 }
 
-const createQuincenaRange = (start) => {
-    const valid = isValidQuincenaStart(start);
+const createQuincenaRange = (date) => {
+    const valid = isQuincenaSelectableDay(date);
     if (!valid.selectable || valid.blocked) return null;
-    const end = calcRangeEnd(valid.realDate, 14);
-    return [fmt(valid.realDate), fmt(end)];
+
+    const start = new Date(valid.realDate);
+    const end = calcRangeEnd(start, 14);
+
+    return [fmt(start), fmt(end)];
 };
 
+
 const createWeekRange = (date) => {
-    if (!isValidWeekStart(date)) return null;
-    let start = new Date(date);
+    let valid = isWeekSelectableDay(date);
+    if (!valid.selectable || valid.blocked) return null;
+    let start = new Date(valid.realDate);
     let end = new Date(start);
     end.setDate(end.getDate() + 6);
     let next = new Date(end);
@@ -581,12 +676,6 @@ function calcRangeEnd(start, baseDays) {
         next.setDate(next.getDate() + 1);
     }
     return end;
-}
-
-function isValidWeekStart(date) {
-    const w = date.getDay();
-    if ((w === 1 || w === 6) && !HOLIDAYS_2026.includes(fmt(date))) return true;
-    return isAltForHoliday(date);
 }
 
 function isAltForHoliday(date) {

@@ -55,6 +55,7 @@
                         <th rowspan="2">Nombre</th>
                         <th rowspan="2">DNI</th>
                         <th rowspan="2">Empresa</th>
+                        <th rowspan="2">Grupo</th>
                         <th rowspan="2">Tipo</th>
                         <th colspan="4">Vacaciones 1</th>
                         <th colspan="4">Vacaciones 2</th>
@@ -76,6 +77,49 @@
             </table>
         </div>
     </main>
+
+    <!-- Diálogo para mostrar información de grupos -->
+    <dialog id="group-info-dialog" class="mdl-dialog group-info-dialog">
+        <div class="dialog-header">
+            <h4 class="dialog-title">Trabajadores que NO pueden coincidir</h4>
+            <button class="close-dialog-btn" title="Cerrar">
+                <i class="material-icons">close</i>
+            </button>
+        </div>
+        <div class="mdl-dialog__content">
+            <div class="selected-employee-summary">
+                <div class="employee-header">
+                    <i class="material-icons">person</i>
+                    <div class="employee-details">
+                        <strong id="dialog-employee-name"></strong>
+                        <div class="employee-groups">
+                            <span class="employee-group-item" id="dialog-employee-empresa"></span>
+                            <span class="employee-group-item" id="dialog-employee-grupo"></span>
+                            <span class="employee-group-item" id="dialog-employee-subgrupo"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="incompatible-table-container">
+                <table class="incompatible-table" id="incompatible-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Empresa</th>
+                            <th>Grupo/Subgrupo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incompatible-tbody">
+                        <tr><td colspan="3" style="text-align:center; padding:10px;">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button mdl-button--colored close-dialog">Cerrar</button>
+        </div>
+    </dialog>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>

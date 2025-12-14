@@ -180,6 +180,43 @@ table.dataTable {
     padding-left: 10px !important;
 }
 
+/* Estilo para la columna de grupo */
+.cell-group {
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+    text-align: center !important;
+    padding: 4px 2px !important;
+}
+
+.group-info-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    transition: all 0.2s;
+}
+
+.group-info-btn:hover {
+    background-color: rgba(63, 81, 181, 0.1);
+    transform: scale(1.1);
+}
+
+.group-info-btn i {
+    font-size: 18px;
+}
+
+.no-group {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
 /* Estilo para el select de tipo */
 .tipo-select {
     width: 70px;
@@ -202,13 +239,6 @@ table.dataTable {
     border-color: #999;
 }
 
-/* Estilo para la columna de exclusiones */
-.table tbody td:nth-child(7) {
-    max-width: 200px;
-    min-width: 150px;
-    white-space: normal;
-    word-wrap: break-word;
-}
 
 .input-range {
     width: 72px;
@@ -485,4 +515,344 @@ div.dt-container div.dt-search input {
 #employees-table thead th:nth-child(2):hover,
 #employees-table thead th:nth-child(3):hover {
     background-color: rgba(63, 81, 181, 0.05) !important;
+}
+
+/* ===== ESTILOS PARA EL DIÁLOGO DE INFORMACIÓN DE GRUPOS ===== */
+.group-info-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    box-shadow: 0 9px 46px 8px rgba(0,0,0,0.14), 0 11px 15px -7px rgba(0,0,0,0.12), 0 24px 38px 3px rgba(0,0,0,0.2);
+    border: none;
+    padding: 0;
+    background-color: #fff;
+    color: #212121;
+    z-index: 2001;
+    opacity: 1 !important;
+}
+
+.group-info-dialog::backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(1px);
+    z-index: 2000;
+    opacity: 1 !important;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background-color: var(--primary);
+    border-radius: 8px 8px 0 0;
+    position: relative;
+}
+
+.dialog-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: white;
+}
+
+.close-dialog-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    width: 32px;
+    height: 32px;
+}
+
+.close-dialog-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.close-dialog-btn i {
+    font-size: 20px;
+}
+
+.group-info-dialog .mdl-dialog__content {
+    padding: 20px;
+    line-height: 1.5;
+    max-height: 60vh;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    background-color: #fff;
+}
+
+/* Estilos para la información del empleado seleccionado */
+.selected-employee-summary {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.employee-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.employee-header i {
+    color: var(--primary);
+    font-size: 24px;
+    margin-top: 2px;
+}
+
+.employee-details {
+    flex: 1;
+}
+
+.employee-details strong {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.employee-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.employee-group-item {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    color: #666;
+}
+
+/* Estilos para la tabla de trabajadores incompatibles */
+.incompatible-table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.incompatible-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.incompatible-table thead {
+    background-color: #f5f5f5;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.incompatible-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+
+.incompatible-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.incompatible-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.incompatible-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Columnas específicas */
+.employee-name {
+    font-weight: 500;
+    color: #333;
+    min-width: 150px;
+}
+
+.employee-empresa {
+    color: #666;
+    min-width: 120px;
+}
+
+.employee-grupo {
+    color: #666;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+/* Estado vacío */
+.incompatible-table tbody tr td[colspan] {
+    text-align: center;
+    padding: 30px 20px !important;
+    color: #666;
+    font-style: italic;
+}
+
+.incompatible-table tbody tr td[colspan] i {
+    display: block;
+    margin: 0 auto 10px;
+    font-size: 32px;
+    color: #4CAF50;
+}
+
+.group-info-dialog .mdl-dialog__actions {
+    padding: 12px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    background-color: #fff;
+    border-radius: 0 0 8px 8px;
+    align-items: center;
+}
+
+.group-info-dialog .mdl-dialog__actions .mdl-button {
+    margin: 0;
+    min-width: 80px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+/* Modo oscuro para el diálogo */
+@media (prefers-color-scheme: dark) {
+    .group-info-dialog {
+        background-color: #2d2d2d;
+        color: #e0e0e0;
+    }
+    
+    .dialog-header {
+        background-color: #303f9f;
+    }
+    
+    .close-dialog-btn {
+        color: white;
+    }
+    
+    .group-info-dialog .mdl-dialog__content {
+        background-color: #2d2d2d;
+    }
+    
+    .employee-details strong {
+        color: #e0e0e0;
+    }
+    
+    .employee-group-item {
+        background-color: #3d3d3d;
+        color: #b0b0b0;
+    }
+    
+    .selected-employee-summary {
+        border-bottom-color: #424242;
+    }
+    
+    .incompatible-table-container {
+        border-color: #424242;
+    }
+    
+    .incompatible-table thead {
+        background-color: #3d3d3d;
+    }
+    
+    .incompatible-table th {
+        color: #e0e0e0;
+        border-bottom-color: #424242;
+    }
+    
+    .incompatible-table td {
+        border-bottom-color: #424242;
+    }
+    
+    .incompatible-table tbody tr:hover {
+        background-color: #3d3d3d;
+    }
+    
+    .employee-name {
+        color: #e0e0e0;
+    }
+    
+    .employee-empresa,
+    .employee-grupo {
+        color: #b0b0b0;
+    }
+    
+    .group-info-dialog .mdl-dialog__actions {
+        background-color: #2d2d2d;
+        border-top-color: #424242;
+    }
+}
+
+/* Responsividad para el diálogo */
+@media (max-width: 768px) {
+    .group-info-dialog {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .group-info-dialog .mdl-dialog__content {
+        padding: 16px;
+        max-height: 50vh;
+    }
+    
+    .employee-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .employee-header i {
+        align-self: flex-start;
+    }
+    
+    .employee-groups {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .employee-group-item {
+        width: fit-content;
+    }
+    
+    .incompatible-table {
+        font-size: 0.8rem;
+    }
+    
+    .incompatible-table th,
+    .incompatible-table td {
+        padding: 6px 8px;
+    }
+    
+    .employee-name,
+    .employee-empresa,
+    .employee-grupo {
+        min-width: auto;
+        white-space: normal;
+        word-break: break-word;
+    }
 }
