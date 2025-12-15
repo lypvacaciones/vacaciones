@@ -325,7 +325,7 @@ async function exportToExcel(employeesData, exportButton) {
             }
         });
         
-// ===== FÓRMULAS PARA EL CALENDARIO VISUAL =====
+// ===== FÓRMULAS PARA EL CALENDARIO VISUAL (MODIFICADA) =====
         employeesData.forEach((emp, empIndex) => {
             const rowNumber = empIndex + 3; // Fila del empleado
             let currentDayCol = startCalendarCol;
@@ -334,33 +334,37 @@ async function exportToExcel(employeesData, exportButton) {
             meses.forEach((mes, mesIndex) => {
                 // Para cada día del mes
                 for (let dia = 1; dia <= mes.dias; dia++) {
-                    // CORRECCIÓN PREVIA: Sin el "="
+                    
                     const fechaExcel = `DATE(2026,${mesIndex + 1},${dia})`; 
                     
-                    const colLetter = getExcelColumnLetter(currentDayCol);
-                    
-                    const formula = `=IF(OR(` +
+                    // La fórmula de condición (la parte del OR) sigue siendo la misma
+                    const condicionOR = 
                         `AND(F${rowNumber}<>"", G${rowNumber}<>"", ${fechaExcel}>=F${rowNumber},${fechaExcel}<=G${rowNumber}),` +
                         `AND(I${rowNumber}<>"", J${rowNumber}<>"", ${fechaExcel}>=I${rowNumber},${fechaExcel}<=J${rowNumber}),` +
                         `AND(L${rowNumber}<>"", M${rowNumber}<>"", ${fechaExcel}>=L${rowNumber},${fechaExcel}<=M${rowNumber}),` +
                         `AND(O${rowNumber}<>"", P${rowNumber}<>"", ${fechaExcel}>=O${rowNumber},${fechaExcel}<=P${rowNumber}),` +
-                        `${fechaExcel}=R${rowNumber},${fechaExcel}=S${rowNumber}),1,0)`;
+                        `${fechaExcel}=R${rowNumber},${fechaExcel}=S${rowNumber}`;
                     
+                    // CAMBIO CLAVE: Devolver 'X' si es verdadero, "" si es falso
+                    const formula = `=IF(OR(${condicionOR}),"X","")`;
+                    
+                    // Aplicar fórmula a la celda
                     const cell = worksheet.getCell(rowNumber, currentDayCol);
                     cell.value = { formula: formula };
-
-                    // === NUEVA LÍNEA MÁGICA ===
-                    // Esto oculta el texto (1 y 0) pero mantiene el valor para el formato condicional
-                    cell.numFmt = ';;;'; 
                     
+                    // Opcional: Centrar el texto 'X' y ponerlo en negrita
                     cell.alignment = { horizontal: 'center', vertical: 'center' };
+                    cell.font = { size: 10, bold: true, color: { argb: 'FFFF0000' } }; // Color Rojo directo
+                    
+                    // Quitar el formato numérico ;;; que pusimos antes, ya que ahora es texto
+                    // cell.numFmt = ';;;'; // Descomentar si aún estaba en el código
+                    
                     cell.border = {
                         top: { style: 'hair' },
                         left: { style: 'hair' },
                         bottom: { style: 'hair' },
                         right: { style: 'hair' }
                     };
-                    cell.font = { size: 8 };
                     
                     currentDayCol++;
                 }
