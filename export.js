@@ -15,233 +15,378 @@ async function exportToExcel(employeesData, exportButton) {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Vacaciones 2026');
         
-        // Configurar el ancho de las columnas (incluyendo exclusiones)
-        const columnWidths = [
-            { header: 'Nombre', key: 'nombre', width: 75 }, // 3 veces más ancha
-            { header: 'DNI', key: 'dni', width: 15 },
-            { header: 'Empresa', key: 'empresa', width: 20 },
-            { header: 'Grupo', key: 'grupo', width: 15 },
-            { header: 'Subgrupo', key: 'subgrupo', width: 15 },
-            { header: 'Exclusiones', key: 'exclusiones', width: 25 }, // COLUMNA AÑADIDA
-            { header: 'Tipo Vacaciones', key: 'tipo', width: 15 },
-            { header: 'Rango1Ini', key: 'r1ini', width: 12 },
-            { header: 'Rango1Fin', key: 'r1fin', width: 12 },
-            { header: 'Días1', key: 'dias1', width: 8 },
-            { header: 'Rango2Ini', key: 'r2ini', width: 12 },
-            { header: 'Rango2Fin', key: 'r2fin', width: 12 },
-            { header: 'Días2', key: 'dias2', width: 8 },
-            { header: 'Rango3Ini', key: 'r3ini', width: 12 },
-            { header: 'Rango3Fin', key: 'r3fin', width: 12 },
-            { header: 'Días3', key: 'dias3', width: 8 },
-            { header: 'Rango4Ini', key: 'r4ini', width: 12 },
-            { header: 'Rango4Fin', key: 'r4fin', width: 12 },
-            { header: 'Días4', key: 'dias4', width: 8 },
-            { header: 'Día Suelto 1', key: 'dia1', width: 12 },
-            { header: 'Día Suelto 2', key: 'dia2', width: 12 }
+        // ===== CONFIGURACIÓN DE COLUMNAS =====
+        // Definir anchos de columnas según la estructura solicitada
+        worksheet.columns = [
+            { key: 'nombre', width: 25 },    // A: Nombre
+            { key: 'dni', width: 12 },       // B: DNI
+            { key: 'empresa', width: 18 },   // C: Empresa
+            { key: 'exclusiones', width: 6 }, // D: Exclusiones (numérico pequeño)
+            { key: 'tipo', width: 10 },      // E: Tipo
+            { key: 'r1ini', width: 12 },     // F: Rango1Ini
+            { key: 'r1fin', width: 12 },     // G: Rango1Fin
+            { key: 'dias1', width: 6 },      // H: Días1 (fórmula)
+            { key: 'r2ini', width: 12 },     // I: Rango2Ini
+            { key: 'r2fin', width: 12 },     // J: Rango2Fin
+            { key: 'dias2', width: 6 },      // K: Días2 (fórmula)
+            { key: 'r3ini', width: 12 },     // L: Rango3Ini
+            { key: 'r3fin', width: 12 },     // M: Rango3Fin
+            { key: 'dias3', width: 6 },      // N: Días3 (fórmula)
+            { key: 'r4ini', width: 12 },     // O: Rango4Ini
+            { key: 'r4fin', width: 12 },     // P: Rango4Fin
+            { key: 'dias4', width: 6 },      // Q: Días4 (fórmula)
+            { key: 'dia1', width: 12 },      // R: DiaSuelto1
+            { key: 'dia2', width: 12 },      // S: DiaSuelto2
+            { key: 'total', width: 10 }      // T: Total Días (fórmula)
         ];
         
-        // Agregar las columnas para cada día del año (2026 no es bisiesto)
-        const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 
-                      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
-        const diasPorMes = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        // ===== PRIMERA FILA (TÍTULOS DE SECCIONES) =====
+        const row1 = worksheet.addRow([]);
         
-        // Crear dos filas de cabecera
-        const headerRow1 = [
-            'Nombre', 'DNI', 'Empresa', 'Grupo', 'Subgrupo', 'Exclusiones', 'Tipo Vacaciones', // EXCLUSIONES AÑADIDA
+        // Fusionar celdas y agregar títulos para cada sección
+        worksheet.mergeCells('F1:H1');
+        worksheet.getCell('F1').value = 'Vacaciones 1';
+        
+        worksheet.mergeCells('I1:K1');
+        worksheet.getCell('I1').value = 'Vacaciones 2';
+        
+        worksheet.mergeCells('L1:N1');
+        worksheet.getCell('L1').value = 'Vacaciones 3';
+        
+        worksheet.mergeCells('O1:Q1');
+        worksheet.getCell('O1').value = 'Vacaciones 4';
+        
+        worksheet.mergeCells('R1:S1');
+        worksheet.getCell('R1').value = 'Días sueltos';
+        
+        worksheet.getCell('T1').value = 'Total Días';
+        
+        // Estilo para la primera fila (títulos de secciones)
+        ['F1', 'I1', 'L1', 'O1', 'R1', 'T1'].forEach(cell => {
+            const cellObj = worksheet.getCell(cell);
+            cellObj.font = { bold: true, size: 12 };
+            cellObj.alignment = { horizontal: 'center', vertical: 'center' };
+            cellObj.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFE0E0E0' }
+            };
+            cellObj.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+        
+        // ===== SEGUNDA FILA (ENCABEZADOS DE COLUMNAS) =====
+        const headers = [
+            'Nombre', 'DNI', 'Empresa', 'Exc.', 'Tipo',
             'Rango1Ini', 'Rango1Fin', 'Días1',
             'Rango2Ini', 'Rango2Fin', 'Días2',
             'Rango3Ini', 'Rango3Fin', 'Días3',
             'Rango4Ini', 'Rango4Fin', 'Días4',
-            'Día Suelto 1', 'Día Suelto 2'
+            'DiaSuelto1', 'DiaSuelto2',
+            'Total Días'
         ];
         
-        const headerRow2 = Array(21).fill(''); // Cambiado de 20 a 21 por la nueva columna
+        const row2 = worksheet.addRow(headers);
         
-        // Agregar los meses a la primera fila y los días a la segunda
-        let colIndex = 21; // Cambiado de 20 a 21 por la nueva columna
-        const monthStartColumns = {};
-        const allDates = []; // Almacenar todas las fechas del año
-        
-        // Generar fechas para cada día del año (2026-01-01 a 2026-12-31)
-        let currentDate = new Date(2026, 0, 1); // 1 de enero de 2026
-        
-        meses.forEach((mes, mesIndex) => {
-            monthStartColumns[mes] = colIndex + 1;
-            headerRow1.push(mes);
-            
-            for (let d = 1; d <= diasPorMes[mesIndex]; d++) {
-                // Crear fecha sin horas (00:00:00)
-                const date = new Date(Date.UTC(2026, mesIndex, d));
-                allDates.push(date);
-                headerRow2.push(date.getDate()); // Solo mostrar el día
-                colIndex++;
-            }
+        // Estilo para la segunda fila
+        row2.eachCell((cell, colNumber) => {
+            cell.font = { bold: true, size: 11 };
+            cell.alignment = { horizontal: 'center', vertical: 'center' };
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFF0F0F0' }
+            };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
         });
         
-        // Agregar las dos filas de cabecera
-        const row1 = worksheet.addRow(headerRow1);
-        const row2 = worksheet.addRow(headerRow2);
-        
-        // Aplicar estilos a las cabeceras
-        row1.font = { bold: true, size: 12 };
-        row2.font = { bold: true, size: 10 };
-        row1.alignment = { horizontal: 'center', vertical: 'center' };
-        row2.alignment = { horizontal: 'center', vertical: 'center' };
-        
-        // Estilo especial para los nombres de los meses
-        meses.forEach((mes, mesIndex) => {
-            const startCol = monthStartColumns[mes];
-            if (startCol) {
-                for (let d = 0; d < diasPorMes[mesIndex]; d++) {
-                    const cell = row1.getCell(startCol + d);
+        // ===== DATOS DE EMPLEADOS (A PARTIR DE FILA 3) =====
+        employeesData.forEach((emp, index) => {
+            const rowNumber = index + 3; // Comenzar en fila 3
+            
+            // Formatear exclusiones como número (contar la cantidad)
+            let exclusionesNumerico = 0;
+            if (emp.exclusiones) {
+                if (Array.isArray(emp.exclusiones)) {
+                    // Si es array, contar elementos no vacíos
+                    exclusionesNumerico = emp.exclusiones.filter(item => 
+                        item !== null && item !== undefined && String(item).trim() !== ''
+                    ).length;
+                } else if (typeof emp.exclusiones === 'string') {
+                    // Si es string, contar elementos separados por comas
+                    const items = emp.exclusiones.split(',').map(item => item.trim());
+                    exclusionesNumerico = items.filter(item => item !== '').length;
+                } else if (typeof emp.exclusiones === 'number') {
+                    // Si ya es número, usarlo directamente
+                    exclusionesNumerico = emp.exclusiones;
+                }
+            }
+            
+            // Determinar tipo
+            const tipo = emp?.tipo === 2 || emp?.tipo === '2' ? 'Semana' : 'Quincena';
+            
+            // Crear la fila con los datos básicos
+            const rowData = [
+                emp.nombre || '',                    // A: Nombre
+                emp.dni || '',                      // B: DNI
+                emp.empresa || '',                  // C: Empresa
+                exclusionesNumerico,                // D: Exclusiones (numérico)
+                tipo,                               // E: Tipo
+                createDateWithoutTime(emp.per1start), // F: Rango1Ini
+                createDateWithoutTime(emp.per1end),   // G: Rango1Fin
+                '',                                  // H: Días1 (fórmula)
+                createDateWithoutTime(emp.per2start), // I: Rango2Ini
+                createDateWithoutTime(emp.per2end),   // J: Rango2Fin
+                '',                                  // K: Días2 (fórmula)
+                createDateWithoutTime(emp.per3start), // L: Rango3Ini
+                createDateWithoutTime(emp.per3end),   // M: Rango3Fin
+                '',                                  // N: Días3 (fórmula)
+                createDateWithoutTime(emp.per4start), // O: Rango4Ini
+                createDateWithoutTime(emp.per4end),   // P: Rango4Fin
+                '',                                  // Q: Días4 (fórmula)
+                null,                               // R: DiaSuelto1 (vacío por ahora)
+                null,                               // S: DiaSuelto2 (vacío por ahora)
+                ''                                  // T: Total Días (fórmula)
+            ];
+            
+            const row = worksheet.addRow(rowData);
+            
+            // Aplicar formato numérico a la columna de exclusiones (columna D)
+            const exclusionCell = row.getCell(4); // Columna D (4 = 1-indexed)
+            exclusionCell.numFmt = '0';
+            exclusionCell.alignment = { horizontal: 'center', vertical: 'center' };
+            
+            // Aplicar bordes a toda la fila
+            row.eachCell((cell) => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            });
+            
+            // ===== FÓRMULAS PARA DÍAS DE CADA RANGO =====
+            const currentRow = rowNumber;
+            
+            // Fórmula para Días1 (columna H)
+            const dias1Formula = `=IF(AND(F${currentRow}<>"",G${currentRow}<>""),G${currentRow}-F${currentRow}+1,0)`;
+            row.getCell(8).value = { formula: dias1Formula }; // H (8 = 1-indexed)
+            
+            // Fórmula para Días2 (columna K)
+            const dias2Formula = `=IF(AND(I${currentRow}<>"",J${currentRow}<>""),J${currentRow}-I${currentRow}+1,0)`;
+            row.getCell(11).value = { formula: dias2Formula }; // K (11 = 1-indexed)
+            
+            // Fórmula para Días3 (columna N)
+            const dias3Formula = `=IF(AND(L${currentRow}<>"",M${currentRow}<>""),M${currentRow}-L${currentRow}+1,0)`;
+            row.getCell(14).value = { formula: dias3Formula }; // N (14 = 1-indexed)
+            
+            // Fórmula para Días4 (columna Q)
+            const dias4Formula = `=IF(AND(O${currentRow}<>"",P${currentRow}<>""),P${currentRow}-O${currentRow}+1,0)`;
+            row.getCell(17).value = { formula: dias4Formula }; // Q (17 = 1-indexed)
+            
+            // ===== FÓRMULA PARA TOTAL DÍAS =====
+            // Sumar todos los días de rangos + días sueltos (si hay)
+            const totalFormula = `=H${currentRow}+K${currentRow}+N${currentRow}+Q${currentRow}+IF(R${currentRow}<>"",1,0)+IF(S${currentRow}<>"",1,0)`;
+            const totalCell = row.getCell(20); // T (20 = 1-indexed)
+            totalCell.value = { formula: totalFormula };
+            totalCell.numFmt = '0';
+            totalCell.alignment = { horizontal: 'center', vertical: 'center' };
+            totalCell.font = { bold: true };
+            
+            // Aplicar color según el tipo
+            if (tipo === 'Quincena') {
+                totalCell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFE8F5E8' } // Verde claro
+                };
+            } else {
+                totalCell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFF5F5F5' } // Gris claro
+                };
+            }
+            
+            // Aplicar formato numérico a las columnas de días (H, K, N, Q)
+            [8, 11, 14, 17].forEach(colIndex => {
+                const cell = row.getCell(colIndex);
+                cell.numFmt = '0';
+                cell.alignment = { horizontal: 'center', vertical: 'center' };
+                cell.font = { bold: true };
+                
+                // Color de fondo para días calculados
+                if (tipo === 'Quincena') {
                     cell.fill = {
                         type: 'pattern',
                         pattern: 'solid',
-                        fgColor: { argb: 'FFE0E0E0' }
+                        fgColor: { argb: 'FFF0F8E8' } // Verde muy claro
+                    };
+                } else {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFF8F8F8' } // Gris muy claro
                     };
                 }
-            }
+            });
         });
         
-        // Fusionar celdas para los meses (colspan)
-        let currentCol = 22; // Cambiado de 21 a 22 por la nueva columna
+        // ===== APLICAR FORMATO DE FECHA DD/MM/AAAA =====
+        // Columnas de fechas: F, G, I, J, L, M, O, P, R, S
+        const fechaColumns = [6, 7, 9, 10, 12, 13, 15, 16, 18, 19];
+        
+        fechaColumns.forEach(colIndex => {
+            // Aplicar formato de fecha "dd/mm/aaaa" a toda la columna
+            const column = worksheet.getColumn(colIndex);
+            
+            // Configurar formato de fecha español (dd/mm/aaaa)
+            column.numFmt = 'dd/mm/yyyy';
+            
+            // Aplicar alineación centrada a toda la columna
+            column.alignment = { horizontal: 'center', vertical: 'center' };
+        });
+        
+        // ===== CALENDARIO VISUAL (A PARTIR DE LA COLUMNA U) =====
+        const startCalendarCol = 21; // Columna U (1-indexed)
+        const meses = [
+            { nombre: 'ENERO', dias: 31 },
+            { nombre: 'FEBRERO', dias: 28 }, // 2026 no es bisiesto
+            { nombre: 'MARZO', dias: 31 },
+            { nombre: 'ABRIL', dias: 30 },
+            { nombre: 'MAYO', dias: 31 },
+            { nombre: 'JUNIO', dias: 30 },
+            { nombre: 'JULIO', dias: 31 },
+            { nombre: 'AGOSTO', dias: 31 },
+            { nombre: 'SEPTIEMBRE', dias: 30 },
+            { nombre: 'OCTUBRE', dias: 31 },
+            { nombre: 'NOVIEMBRE', dias: 30 },
+            { nombre: 'DICIEMBRE', dias: 31 }
+        ];
+        
+        let currentCol = startCalendarCol;
+        
+        // Primera fila del calendario (meses)
         meses.forEach((mes, mesIndex) => {
-            const daysInMonth = diasPorMes[mesIndex];
-            if (daysInMonth > 1) {
-                worksheet.mergeCells(row1.number, currentCol, row1.number, currentCol + daysInMonth - 1);
-            }
-            currentCol += daysInMonth;
-        });
-        
-        // Fusionar celdas verticalmente para las primeras 21 columnas (rowspan)
-        for (let i = 1; i <= 21; i++) { // Cambiado de 20 a 21
-            worksheet.mergeCells(row1.number, i, row2.number, i);
-        }
-        
-        // Procesar cada empleado
-        employeesData.forEach((emp, empIndex) => {
-            const rowNumber = empIndex + 3; // +3 porque las filas 1 y 2 son cabeceras
-            
-            // Formatear exclusiones (convertir array a string si es necesario)
-            let exclusionesFormatted = '';
-            if (emp.exclusiones) {
-                if (Array.isArray(emp.exclusiones)) {
-                    exclusionesFormatted = emp.exclusiones.join(', ');
-                } else {
-                    exclusionesFormatted = String(emp.exclusiones);
+            if (mes.dias > 0) {
+                const startCol = currentCol;
+                const endCol = currentCol + mes.dias - 1;
+                
+                // Fusionar celdas del mes
+                if (mes.dias > 1) {
+                    worksheet.mergeCells(1, startCol, 1, endCol);
                 }
-            }
-            
-            // Preparar datos de la fila
-            const rowData = {
-                nombre: emp.nombre || '',
-                dni: emp.dni || '',
-                empresa: emp.empresa || '',
-                grupo: emp.grupo || '',
-                subgrupo: emp.subgrupo || '', // Asegurar que se incluye
-                exclusiones: exclusionesFormatted, // EXCLUSIONES AÑADIDAS
-                tipo: detectTipoExport(emp) === 1 ? 'Quincena' : 'Semana', // CORREGIDO: Solo "Quincena" o "Semana"
-                // Fechas como objetos Date sin horas
-                r1ini: emp.per1start ? createDateWithoutTime(emp.per1start) : null,
-                r1fin: emp.per1end ? createDateWithoutTime(emp.per1end) : null,
-                dias1: emp.per1start && emp.per1end ? calculateDaysDifference(emp.per1start, emp.per1end) : '',
-                r2ini: emp.per2start ? createDateWithoutTime(emp.per2start) : null,
-                r2fin: emp.per2end ? createDateWithoutTime(emp.per2end) : null,
-                dias2: emp.per2start && emp.per2end ? calculateDaysDifference(emp.per2start, emp.per2end) : '',
-                r3ini: emp.per3start ? createDateWithoutTime(emp.per3start) : null,
-                r3fin: emp.per3end ? createDateWithoutTime(emp.per3end) : null,
-                dias3: emp.per3start && emp.per3end ? calculateDaysDifference(emp.per3start, emp.per3end) : '',
-                r4ini: emp.per4start ? createDateWithoutTime(emp.per4start) : null,
-                r4fin: emp.per4end ? createDateWithoutTime(emp.per4end) : null,
-                dias4: emp.per4start && emp.per4end ? calculateDaysDifference(emp.per4start, emp.per4end) : '',
-                dia1: null,
-                dia2: null
-            };
-            
-            // Crear la fila con los primeros 21 valores
-            const rowArray = Object.values(rowData);
-            const newRow = worksheet.addRow(rowArray);
-            
-            // Aplicar formato de fecha a las columnas de fechas
-            const dateColumns = [8, 9, 11, 12, 14, 15, 17, 18, 20, 21]; // Ajustados por la nueva columna
-            dateColumns.forEach(colIndex => {
-                const cell = newRow.getCell(colIndex);
-                if (cell.value instanceof Date) {
-                    cell.numFmt = 'dd/mm/yyyy';
-                    cell.alignment = { horizontal: 'center', vertical: 'center' };
-                } else if (cell.value === null || cell.value === '') {
-                    cell.value = '';
-                }
-            });
-            
-            // Aplicar alineación centrada a las columnas de días
-            const daysColumns = [10, 13, 16, 19]; // Ajustados por la nueva columna
-            daysColumns.forEach(colIndex => {
-                const cell = newRow.getCell(colIndex);
-                cell.alignment = { horizontal: 'center', vertical: 'center' };
-            });
-            
-            // Aplicar alineación a la columna de exclusiones
-            const exclusionesCell = newRow.getCell(6);
-            exclusionesCell.alignment = { horizontal: 'left', vertical: 'center', wrapText: true };
-            
-            // Agregar fórmulas condicionales para cada día del año
-            // Las fórmulas verificarán si la fecha está dentro de algún rango
-            allDates.forEach((date, dateIndex) => {
-                const colNumber = 22 + dateIndex; // Columna actual (1-based) - Cambiado de 21 a 22
-                const colLetter = getExcelColumnLetter(colNumber);
-                const rowNum = newRow.number;
                 
-                // Crear fórmula que verifica si la fecha está en algún rango
-                // Usar referencias absolutas para las columnas de fechas
-                let formula = '';
+                // Poner el nombre del mes
+                const monthCell = worksheet.getCell(1, startCol);
+                monthCell.value = mes.nombre;
+                monthCell.font = { bold: true, size: 10 };
+                monthCell.alignment = { horizontal: 'center', vertical: 'center' };
+                monthCell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFF0F0F0' }
+                };
+                monthCell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
                 
-                // Array para almacenar las condiciones de cada rango
-                const conditions = [];
-                
-                // Para cada rango (1-4), crear una condición
-                for (let i = 1; i <= 4; i++) {
-                    const startCol = 7 + (i-1)*3 + 1; // Columna de inicio del rango (ajustado por nueva columna)
-                    const endCol = startCol + 1; // Columna de fin del rango
-                    const startLetter = getExcelColumnLetter(startCol);
-                    const endLetter = getExcelColumnLetter(endCol);
+                // Segunda fila del calendario (días del mes)
+                for (let dia = 1; dia <= mes.dias; dia++) {
+                    const dayCell = worksheet.getCell(2, currentCol);
+                    dayCell.value = dia;
+                    dayCell.font = { bold: true, size: 9 };
+                    dayCell.alignment = { horizontal: 'center', vertical: 'center' };
+                    dayCell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    };
                     
-                    // Condición: fecha >= inicio AND fecha <= fin
-                    // Usar referencias absolutas para las columnas de rango
-                    conditions.push(
-                        `AND(${colLetter}${rowNum}>=${startLetter}${rowNum},${colLetter}${rowNum}<=${endLetter}${rowNum})`
-                    );
+                    // Ajustar ancho de la columna
+                    worksheet.getColumn(currentCol).width = 4;
+                    
+                    currentCol++;
                 }
-                
-                // Combinar todas las condiciones con OR
-                if (conditions.length > 0) {
-                    formula = `=IF(OR(${conditions.join(',')}),1,0)`;
+            }
+        });
+        
+// ===== FÓRMULAS PARA EL CALENDARIO VISUAL =====
+        employeesData.forEach((emp, empIndex) => {
+            const rowNumber = empIndex + 3; // Fila del empleado
+            let currentDayCol = startCalendarCol;
+            
+            // Para cada mes
+            meses.forEach((mes, mesIndex) => {
+                // Para cada día del mes
+                for (let dia = 1; dia <= mes.dias; dia++) {
+                    // CORRECCIÓN PREVIA: Sin el "="
+                    const fechaExcel = `DATE(2026,${mesIndex + 1},${dia})`; 
+                    
+                    const colLetter = getExcelColumnLetter(currentDayCol);
+                    
+                    const formula = `=IF(OR(` +
+                        `AND(F${rowNumber}<>"", G${rowNumber}<>"", ${fechaExcel}>=F${rowNumber},${fechaExcel}<=G${rowNumber}),` +
+                        `AND(I${rowNumber}<>"", J${rowNumber}<>"", ${fechaExcel}>=I${rowNumber},${fechaExcel}<=J${rowNumber}),` +
+                        `AND(L${rowNumber}<>"", M${rowNumber}<>"", ${fechaExcel}>=L${rowNumber},${fechaExcel}<=M${rowNumber}),` +
+                        `AND(O${rowNumber}<>"", P${rowNumber}<>"", ${fechaExcel}>=O${rowNumber},${fechaExcel}<=P${rowNumber}),` +
+                        `${fechaExcel}=R${rowNumber},${fechaExcel}=S${rowNumber}),1,0)`;
+                    
+                    const cell = worksheet.getCell(rowNumber, currentDayCol);
+                    cell.value = { formula: formula };
+
+                    // === NUEVA LÍNEA MÁGICA ===
+                    // Esto oculta el texto (1 y 0) pero mantiene el valor para el formato condicional
+                    cell.numFmt = ';;;'; 
+                    
+                    cell.alignment = { horizontal: 'center', vertical: 'center' };
+                    cell.border = {
+                        top: { style: 'hair' },
+                        left: { style: 'hair' },
+                        bottom: { style: 'hair' },
+                        right: { style: 'hair' }
+                    };
+                    cell.font = { size: 8 };
+                    
+                    currentDayCol++;
                 }
-                
-                // Asignar la fórmula a la celda
-                const cell = newRow.getCell(colNumber);
-                cell.value = { formula: formula };
-                cell.alignment = { horizontal: 'center', vertical: 'center' };
             });
         });
         
-        // Crear reglas de formato condicional para las celdas de días
-        // Pintar de rojo las celdas donde la fórmula devuelva 1
-        const startCol = 22; // Primera columna de días (cambiado de 21 a 22)
-        const endCol = startCol + allDates.length - 1; // Última columna de días
-        const startRow = 3; // Primera fila de datos
-        const endRow = employeesData.length + 2; // Última fila de datos
+        // ===== APLICAR FORMATO CONDICIONAL AL CALENDARIO =====
+        const lastRow = employeesData.length + 2;
+        const lastCalendarCol = startCalendarCol + 365 - 1; // 365 días del año
         
-        const startColLetter = getExcelColumnLetter(startCol);
-        const endColLetter = getExcelColumnLetter(endCol);
+        // Calcular el rango del calendario (desde U3 hasta la última celda)
+        const startColLetter = getExcelColumnLetter(startCalendarCol);
+        const endColLetter = getExcelColumnLetter(lastCalendarCol);
+        const calendarRange = `${startColLetter}3:${endColLetter}${lastRow}`;
         
-        // Agregar formato condicional CORREGIDO
+        // Agregar formato condicional usando el tipo correcto
+        // En ExcelJS, el formato condicional debe usar referencias relativas a la celda superior izquierda
+        // Para un rango U3:ZZ100, la fórmula debe referirse a U3 (celda superior izquierda)
+        
         worksheet.addConditionalFormatting({
-            ref: `${startColLetter}${startRow}:${endColLetter}${endRow}`,
+            ref: calendarRange,
             rules: [
                 {
-                    type: 'expression',
-                    formulae: [`${startColLetter}${startRow}=1`],
+                    type: 'cellIs',
+                    operator: 'equal',
+                    formulae: ['1'],
                     style: {
                         fill: {
                             type: 'pattern',
@@ -250,29 +395,82 @@ async function exportToExcel(employeesData, exportButton) {
                         },
                         font: {
                             color: { argb: 'FFFFFFFF' }, // Blanco
-                            bold: true
+                            bold: true,
+                            size: 8
                         }
                     }
                 }
             ]
         });
         
-        // Aplicar bordes a todas las celdas
-        worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-            row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-                cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                };
-            });
+        // También podemos agregar un formato para celdas vacías (opcional)
+        worksheet.addConditionalFormatting({
+            ref: calendarRange,
+            rules: [
+                {
+                    type: 'cellIs',
+                    operator: 'equal',
+                    formulae: ['0'],
+                    style: {
+                        fill: {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFFFFFFF' } // Blanco
+                        },
+                        font: {
+                            color: { argb: 'FFCCCCCC' }, // Gris claro
+                            size: 8
+                        }
+                    }
+                }
+            ]
         });
         
-        // Congelar paneles (fijar las primeras 2 filas y las primeras 21 columnas)
+        // ===== NOTA EXPLICATIVA =====
+        // Agregar una fila con instrucciones
+        const noteRow = worksheet.getRow(lastRow + 2);
+        noteRow.getCell(1).value = 'INSTRUCCIONES:';
+        noteRow.getCell(1).font = { bold: true, color: { argb: 'FF0000FF' } };
+        
+        const noteRow2 = worksheet.getRow(lastRow + 3);
+        noteRow2.getCell(1).value = '1. El calendario muestra los días de vacaciones en rojo (valor 1 = vacaciones, 0 = trabajo)';
+        noteRow2.getCell(1).font = { size: 10 };
+        
+        const noteRow3 = worksheet.getRow(lastRow + 4);
+        noteRow3.getCell(1).value = '2. Los rangos se pueden modificar y las fórmulas recalcularán automáticamente';
+        noteRow3.getCell(1).font = { size: 10 };
+        
+        const noteRow4 = worksheet.getRow(lastRow + 5);
+        noteRow4.getCell(1).value = '3. Para días sueltos, escribir la fecha en las columnas R y S (DiaSuelto1 y DiaSuelto2)';
+        noteRow4.getCell(1).font = { size: 10 };
+        
+        // ===== CONFIGURACIÓN FINAL =====
+        
+        // Ajustar altura de las dos primeras filas
+        worksheet.getRow(1).height = 25;
+        worksheet.getRow(2).height = 20;
+        
+        // Ajustar altura de las filas de datos
+        for (let i = 3; i <= employeesData.length + 2; i++) {
+            worksheet.getRow(i).height = 18;
+        }
+        
+        // Congelar las dos primeras filas y las primeras 20 columnas
         worksheet.views = [
-            { state: 'frozen', xSplit: 21, ySplit: 2, activeCell: 'A1' } // Cambiado de 20 a 21
+            { 
+                state: 'frozen', 
+                xSplit: 20, // Congelar columnas A-T
+                ySplit: 2,  // Congelar filas 1-2
+                activeCell: 'A3',
+                showGridLines: true
+            }
         ];
+        
+        // Aplicar filtros a la segunda fila (solo columnas A-T)
+        worksheet.autoFilter = {
+            from: 'A2',
+            to: 'T2'
+        };
         
         // Generar el archivo Excel
         const buffer = await workbook.xlsx.writeBuffer();
@@ -292,7 +490,7 @@ async function exportToExcel(employeesData, exportButton) {
     }
 }
 
-// ===== FUNCIONES HELPER PARA EXPORTACIÓN =====
+// ===== FUNCIONES HELPER =====
 
 // Crear fecha sin horas (00:00:00)
 function createDateWithoutTime(dateString) {
@@ -310,20 +508,6 @@ function createDateWithoutTime(dateString) {
     return new Date(Date.UTC(year, month - 1, day));
 }
 
-// Calcular diferencia de días entre dos fechas (inclusive)
-function calculateDaysDifference(startStr, endStr) {
-    const startDate = createDateWithoutTime(startStr);
-    const endDate = createDateWithoutTime(endStr);
-    
-    if (!startDate || !endDate) return 0;
-    
-    // Calcular diferencia en días
-    const diffTime = Math.abs(endDate - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays + 1; // +1 porque es inclusive
-}
-
 // Obtener letra de columna Excel (1 -> A, 27 -> AA, etc.)
 function getExcelColumnLetter(columnNumber) {
     let columnLetter = '';
@@ -333,9 +517,4 @@ function getExcelColumnLetter(columnNumber) {
         columnNumber = Math.floor((columnNumber - 1) / 26);
     }
     return columnLetter;
-}
-
-// Detectar tipo de empleado (1: quincena, 2: semana) - SOLO "QUINCENA" O "SEMANA"
-function detectTipoExport(emp) {
-    return emp?.tipo === 2 || emp?.tipo === '2' ? 2 : 1;
 }
