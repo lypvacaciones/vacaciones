@@ -459,13 +459,12 @@ async function exportToExcel(employeesData, exportButton) {
         worksheet.views = [
             { 
                 state: 'frozen', 
-                xSplit: 20, // Congelar columnas A-T
-                ySplit: 2,  // Congelar filas 1-2
+                ySplit: 2,  // Congelar solo las dos primeras filas
                 activeCell: 'A3',
                 showGridLines: true
             }
         ];
-        
+
         // Aplicar filtros a la segunda fila (solo columnas A-T)
         worksheet.autoFilter = {
             from: 'A2',
