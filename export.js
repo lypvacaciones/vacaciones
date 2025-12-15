@@ -367,26 +367,29 @@ async function exportToExcel(employeesData, exportButton) {
             });
         });
         
-        // ===== APLICAR FORMATO CONDICIONAL AL CALENDARIO =====
+// ===== APLICAR FORMATO CONDICIONAL AL CALENDARIO =====
         const lastRow = employeesData.length + 2;
-        const lastCalendarCol = startCalendarCol + 365 - 1; // 365 días del año
+        const lastCalendarCol = startCalendarCol + 365 - 1; 
         
-        // Calcular el rango del calendario (desde U3 hasta la última celda)
-        const startColLetter = getExcelColumnLetter(startCalendarCol);
+        // Calcular letras de columna
+        const startColLetter = getExcelColumnLetter(startCalendarCol); // Probablemente "U"
         const endColLetter = getExcelColumnLetter(lastCalendarCol);
+        
+        // El rango completo
         const calendarRange = `${startColLetter}3:${endColLetter}${lastRow}`;
         
-        // Agregar formato condicional usando el tipo correcto
-        // En ExcelJS, el formato condicional debe usar referencias relativas a la celda superior izquierda
-        // Para un rango U3:ZZ100, la fórmula debe referirse a U3 (celda superior izquierda)
-        
+        // SOLUCIÓN: Usar 'expression' en lugar de 'cellIs'
+        // La fórmula debe apuntar a la PRIMERA celda del rango (Top-Left), sin símbolos $.
+        // Excel ajustará automáticamente la referencia para el resto de celdas.
+        const conditionFormula = `${startColLetter}3=1`; // Ejemplo: "U3=1"
+
         worksheet.addConditionalFormatting({
             ref: calendarRange,
             rules: [
                 {
-                    type: 'cellIs',
-                    operator: 'equal',
-                    formulae: ['1'],
+                    type: 'expression',   // CAMBIO CLAVE: Usar expresión lógica
+                    priority: 1,          // IMPORTANTE: Prioridad para Excel
+                    formulae: [conditionFormula],
                     style: {
                         fill: {
                             type: 'pattern',
@@ -394,9 +397,9 @@ async function exportToExcel(employeesData, exportButton) {
                             fgColor: { argb: 'FFFF0000' } // Rojo
                         },
                         font: {
-                            color: { argb: 'FFFFFFFF' }, // Blanco
-                            bold: true,
-                            size: 8
+                            // Color Rojo también para ocultar el "1" si el formato ;;; fallase
+                            color: { argb: 'FFFF0000' }, 
+                            bold: true
                         }
                     }
                 }
