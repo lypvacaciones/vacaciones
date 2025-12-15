@@ -37,7 +37,7 @@ async function exportToExcel(employeesData, exportButton) {
             { key: 'dias4', width: 6 },      // Q: Días4 (fórmula)
             { key: 'dia1', width: 12 },      // R: DiaSuelto1
             { key: 'dia2', width: 12 },      // S: DiaSuelto2
-            { key: 'total', width: 10 }      // T: Total Días (fórmula)
+            { key: 'total', width: 11 }      // T: Total Días (fórmula)
         ];
         
         // ===== PRIMERA FILA (TÍTULOS DE SECCIONES) =====
